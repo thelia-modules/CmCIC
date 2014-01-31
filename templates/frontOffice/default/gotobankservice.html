@@ -17,43 +17,41 @@
 {block name="main-content"}
 <div>
     <p>
-        Cliquez sur le bouton ci-dessous pour vous connecter au serveur de paiement.<br />
-        <span class="anglais">Click on the following button to be redirected to the payment server.</span>
+        {intl l="You're going to be redirected to our bank paiement service"}.
     </p>
-    <!-- FORMULAIRE TYPE DE PAIEMENT / PAYMENT FORM TEMPLATE -->
-    <form action="" method="post" id="PaymentRequest">
+    <!-- PAYMENT FORM TEMPLATE -->
+    <form action="{$url_bank}" method="post" id="PaymentRequest">
         <p>
-            <input type="hidden" name="version"             id="version"        value="" />
-            <input type="hidden" name="TPE"                 id="TPE"            value="" />
-            <input type="hidden" name="date"                id="date"           value="" />
-            <input type="hidden" name="montant"             id="montant"        value="" />
-            <input type="hidden" name="reference"           id="reference"      value="" />
-            <input type="hidden" name="MAC"                 id="MAC"            value="" />
-            <input type="hidden" name="url_retour"          id="url_retour"     value="" />
-            <input type="hidden" name="url_retour_ok"       id="url_retour_ok"  value="" />
-            <input type="hidden" name="url_retour_err"      id="url_retour_err" value="" />
-            <input type="hidden" name="lgue"                id="lgue"           value="" />
-            <input type="hidden" name="societe"             id="societe"        value="" />
-            <input type="hidden" name="texte-libre"         id="texte-libre"    value="" />
-            <input type="hidden" name="mail"                id="mail"           value="" />
-            <!-- Uniquement pour le Paiement fractionn� -->
-            <input type="hidden" name="nbrech"              id="nbrech"         value="" />
-            <input type="hidden" name="dateech1"            id="dateech1"       value="" />
-            <input type="hidden" name="montantech1"         id="montantech1"    value="" />
-            <input type="hidden" name="dateech2"            id="dateech2"       value="" />
-            <input type="hidden" name="montantech2"         id="montantech2"    value="" />
-            <input type="hidden" name="dateech3"            id="dateech3"       value="" />
-            <input type="hidden" name="montantech3"         id="montantech3"    value="" />
-            <input type="hidden" name="dateech4"            id="dateech4"       value="" />
-            <input type="hidden" name="montantech4"         id="montantech4"    value="" />
-            <!-- -->
-            <input type="submit" name="bouton"              id="bouton"         value="Connexion / Connection" />
+            <input type="hidden" name="version" id="version" value="{$version}"/>
+            <input type="hidden" name="TPE" id="TPE" value="{$TPE}"/>
+            <input type="hidden" name="date" id="date" value="{$date}"/>
+            <input type="hidden" name="montant" id="montant" value="{$montant}"/>
+            <input type="hidden" name="reference" id="reference" value="{$reference}"/>
+            <input type="hidden" name="MAC" id="MAC" value="{$MAC}"/>
+            <input type="hidden" name="url_retour" id="url_retour" value="{$url_retour}"/>
+            <input type="hidden" name="url_retour_ok" id="url_retour_ok" value="{$url_retour_ok}"/>
+            <input type="hidden" name="url_retour_err" id="url_retour_err" value="{$url_retour_err}"/>
+            <input type="hidden" name="lgue" id="lgue" value="{$lgue}"/>
+            <input type="hidden" name="societe" id="societe" value="{$societe}"/>
+            <input type="hidden" name="texte-libre" id="texte-libre" value="{$texte-libre}"/>
+            <input type="hidden" name="mail" id="mail" value="{$mail}"/>
+            <!-- Uniquement pour le Paiement fractionne -->
+            <input type="hidden" name="nbrech" id="nbrech" value="{$nbrech}"/>
+            <input type="hidden" name="dateech1" id="dateech1" value="{$dateech1}"/>
+            <input type="hidden" name="montantech1" id="montantech1" value="{$montantech1}"/>
+            <input type="hidden" name="dateech2" id="dateech2" value="{$dateech2}"/>
+            <input type="hidden" name="montantech2" id="montantech2" value="{$montantech2}"/>
+            <input type="hidden" name="dateech3" id="dateech3" value="{$dateech3}"/>
+            <input type="hidden" name="montantech3" id="montantech3" value="{$montantech3}"/>
+            <input type="hidden" name="dateech4" id="dateech4" value="{$dateech4}"/>
+            <input type="hidden" name="montantech4" id="montantech4" value="{$montantech4}"/>
+            <input type="submit" value="go"/>
         </p>
     </form>
 </div>
 <!-- FIN FORMULAIRE TYPE DE PAIEMENT / END PAYMENT FORM TEMPLATE -->
 <script type="text/javascript">
-    document.forms['PaymentRequest'].submit();
+    //document.forms['PaymentRequest'].submit();
 </script>
 {/block}
 

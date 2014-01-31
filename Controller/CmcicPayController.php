@@ -3,10 +3,11 @@
 namespace CmCIC\Controller;
 
 use CmCIC\CmCIC;
-use CmCIC\Model\ConfigInterface;
+use Thelia\Core\Translation\Translator;
 use Thelia\Controller\Front\BaseFrontController;
 use CmCIC\Model\Config;
-use Thelia\Core\HttpFoundation\Request;
+use Thelia\Model\OrderQuery;
+use Thelia\Tools\URL;
 
 class CmcicPayController extends BaseFrontController {
 
@@ -16,62 +17,110 @@ class CmcicPayController extends BaseFrontController {
     const CMCIC_CGI2_MACOK = "0";
     const CMCIC_CGI2_MACNOTOK = "1\n";
     const CMCIC_CGI2_FIELDS = "%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*";
-    const CMCIC_CGI1_FIELDS = "%s*%s*%s%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s";
+    const CMCIC_CGI1_FIELDS = "%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s";
     const CMCIC_URLPAIEMENT = "%s/%s";
-
-    protected $sVersion;
-    protected $sNumero;
-    protected $sCodeSociete;
-    protected $sLangue;
-    protected $sUrlOK;
-    protected $sUrlKO;
-    protected $sUrlPaiement;
 
     protected $_sKey;
     protected $_sUsableKey;
 
-    public function __construct(Request $request) {
-        $this->request = $request;
+    protected $config;
+
+    const ORDER_NOT_PAID = "not_paid";
+
+    public static function harmonise($value, $type, $len)
+    {
+        switch ($type) {
+            case 'numeric':
+                $value = (string) $value;
+                if(mb_strlen($value, 'utf8') > $len);
+                $value = substr($value, 0, $len);
+                for ($i = mb_strlen($value, 'utf8'); $i < $len; $i++) {
+                    $value = '0' . $value;
+                }
+                break;
+            case 'alphanumeric':
+                $value = (string) $value;
+                if(mb_strlen($value, 'utf8') > $len);
+                $value = substr($value, 0, $len);
+                for ($i = mb_strlen($value, 'utf8'); $i < $len; $i++) {
+                    $value .= ' ';
+                }
+                break;
+        }
+
+        return $value;
     }
 
-    public function getSession() {
-        return $this->getRequest()->getSession();
+    public function gotopage($order) {
+        $ord = OrderQuery::create()->findPk($order);
+        if($ord->getCustomerId() != $this->getSession()->getCustomerUser()->getId() ||
+            $ord->getOrderStatus()->getCode() != self::ORDER_NOT_PAID)
+            $ord = null;
+        if($ord !== null) {
+            $c = Config::read(CmCIC::JSON_CONFIG_PATH);
+            $currency = $ord->getCurrency()->getCode();
+            $opts="";
+            $vars = array(
+                "url_bank"=> sprintf(self::CMCIC_URLPAIEMENT, $c["CMCIC_SERVER"], $c["CMCIC_PAGE"]),
+                "version"=>$c["CMCIC_VERSION"],
+                "TPE"=>$c["CMCIC_TPE"],
+                "date"=>date("d/m/Y:H:i:s"),
+                "montant"=>(string)$ord->getTotalAmount().$currency,
+                "reference"=>self::harmonise($ord->getId(),'numeric',12),
+                "url_retour"=>URL::getInstance()->absoluteUrl("/module/cmcic/receive"),
+                "url_retour_ok"=>URL::getInstance()->absoluteUrl("/order/placed/".(string)$ord->getId()),
+                "url_retour_err"=>URL::getInstance()->absoluteUrl("/module/cmcic/error"),
+                "lgue"=>strtoupper($this->getSession()->getLang()->getCode()),
+                "societe"=>$c["CMCIC_CODESOCIETE"],
+                "texte-libre"=>base64_encode("J'aime le sirop de fraise. :)"),
+                "mail"=>$this->getSession()->getCustomerUser()->getEmail(),
+                "nbrech"=>"",
+                "dateech1"=>"",
+                "montantech1"=>"",
+                "dateech2"=>"",
+                "montantech2"=>"",
+                "dateech3"=>"",
+                "montantech3"=>"",
+                "dateech4"=>"",
+                "montantech4"=>""
+            );
+            $mac = $this->computeHmac(
+                sprintf(
+                    self::CMCIC_CGI1_FIELDS,
+                    $vars["TPE"],
+                    $vars["date"],
+                    $vars["montant"],
+                    $vars["reference"],
+                    $vars["texte-libre"],
+                    $vars["version"],
+                    $vars["lgue"],
+                    $vars["societe"],
+                    $vars["mail"],
+                    $vars["nbrech"],
+                    $vars["dateech1"],
+                    $vars["montantech1"],
+                    $vars["dateech2"],
+                    $vars["montantech2"],
+                    $vars["dateech3"],
+                    $vars["montantech3"],
+                    $vars["dateech4"],
+                    $vars["montantech4"],
+                    $opts
+                ),
+                $this->_getUsableKey($c["CMCIC_KEY"])
+            );
+            $vars["MAC"] = $mac;
+            return $this->render("gotobankservice",$vars);
+        } else {
+            throw new \Exception(Translator::getInstance()->trans("You shouldn't be here."));
+        }
+
     }
 
-    public function getRequest() {
-        return $this->request;
-    }
+    private function _getUsableKey($key) {
 
-    public function goto_paypage(ConfigInterface $config) {
-        $a = $config::read(CmCIC::JSON_CONFIG_PATH);
-        $this->render("gotobankservice");
-
-    }
-
-    public function hydrate($sLanguage = "FR") {
-        $config = Config::read(CmCIC::JSON_CONFIG_PATH);
-
-        $this->sVersion = $c['CMCIC_VERSION'];
-        $this->_sKey = $c['CMCIC_Key'];
-        $this->sNumero = $c['CMCIC_TPE'];
-        $this->sUrlPaiement = $c['CMCIC_SERVEUR'] . $config['CMCIC_URLPAIEMENT'];
-
-        $this->sCodeSociete = $c['CMCIC_CODESOCIETE'];
-        $this->sLangue = $sLanguage;
-
-        $this->sUrlOK = $c['CMCIC_URLOK'];
-        $this->sUrlKO = $c['CMCIC_URLKO'];
-        $this->_sUsableKey = $this->_getUsableKey();
-    }
-
-    public function getKey() {
-        return $this->_sKey;
-    }
-
-    private function _getUsableKey(){
-
-        $hexStrKey  = substr($this->getKey(), 0, 38);
-        $hexFinal   = "" . substr($this->getKey(), 38, 2) . "00";
+        $hexStrKey  = substr($key, 0, 38);
+        $hexFinal   = "" . substr($key, 38, 2) . "00";
 
         $cca0=ord($hexFinal);
 
@@ -88,9 +137,9 @@ class CmcicPayController extends BaseFrontController {
         return pack("H*", $hexStrKey);
     }
 
-    public function computeHmac($sData) {
+    public function computeHmac($sData, $key) {
 
-        return strtolower(hash_hmac("sha1", $sData, $this->_sUsableKey));
+        return strtolower(hash_hmac("sha1", $sData, $key));
 
         // If you have don't have PHP 5 >= 5.1.2 and PECL hash >= 1.1
         // you may use the hmac_sha1 function defined below

@@ -23,13 +23,13 @@
 
 namespace CmCIC;
 
+use Symfony\Component\Routing\Router;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Thelia\Model\Order;
 use Thelia\Module\BaseModule;
 use Thelia\Module\PaymentModuleInterface;
 use Thelia\Model\ModuleImageQuery;
-use CmCIC\Model\Config;
-use CmCIC\Controller\CmcicPayController;
+use Thelia\Controller\Front\BaseFrontController;
 
 class CmCIC extends BaseModule implements  PaymentModuleInterface
 {
@@ -57,8 +57,7 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
      */
     public function pay(Order $order)
     {
-        $control = new CmcicPayController($this->getRequest());
-        $control->goto_paypage(new Config());
+        //$this->container->get('')->redirectToRoute("cmcic.bankservice");
     }
 
     public function getRequest() {
