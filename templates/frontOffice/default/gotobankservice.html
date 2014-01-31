@@ -1,0 +1,60 @@
+{extends file="layout.tpl"}
+
+{* Security *}
+{block name="no-return-functions" prepend}
+{check_auth context="front" role="CUSTOMER" login_tpl="login"}
+{/block}
+
+{* Breadcrumb *}
+{block name='no-return-functions' append}
+{$breadcrumbs = [
+['title' => {intl l="Redirect to bank service"}]
+]}
+{/block}
+
+{block name="body-class"}page-gotobankservice{/block}
+
+{block name="main-content"}
+<div>
+    <p>
+        Cliquez sur le bouton ci-dessous pour vous connecter au serveur de paiement.<br />
+        <span class="anglais">Click on the following button to be redirected to the payment server.</span>
+    </p>
+    <!-- FORMULAIRE TYPE DE PAIEMENT / PAYMENT FORM TEMPLATE -->
+    <form action="" method="post" id="PaymentRequest">
+        <p>
+            <input type="hidden" name="version"             id="version"        value="" />
+            <input type="hidden" name="TPE"                 id="TPE"            value="" />
+            <input type="hidden" name="date"                id="date"           value="" />
+            <input type="hidden" name="montant"             id="montant"        value="" />
+            <input type="hidden" name="reference"           id="reference"      value="" />
+            <input type="hidden" name="MAC"                 id="MAC"            value="" />
+            <input type="hidden" name="url_retour"          id="url_retour"     value="" />
+            <input type="hidden" name="url_retour_ok"       id="url_retour_ok"  value="" />
+            <input type="hidden" name="url_retour_err"      id="url_retour_err" value="" />
+            <input type="hidden" name="lgue"                id="lgue"           value="" />
+            <input type="hidden" name="societe"             id="societe"        value="" />
+            <input type="hidden" name="texte-libre"         id="texte-libre"    value="" />
+            <input type="hidden" name="mail"                id="mail"           value="" />
+            <!-- Uniquement pour le Paiement fractionn� -->
+            <input type="hidden" name="nbrech"              id="nbrech"         value="" />
+            <input type="hidden" name="dateech1"            id="dateech1"       value="" />
+            <input type="hidden" name="montantech1"         id="montantech1"    value="" />
+            <input type="hidden" name="dateech2"            id="dateech2"       value="" />
+            <input type="hidden" name="montantech2"         id="montantech2"    value="" />
+            <input type="hidden" name="dateech3"            id="dateech3"       value="" />
+            <input type="hidden" name="montantech3"         id="montantech3"    value="" />
+            <input type="hidden" name="dateech4"            id="dateech4"       value="" />
+            <input type="hidden" name="montantech4"         id="montantech4"    value="" />
+            <!-- -->
+            <input type="submit" name="bouton"              id="bouton"         value="Connexion / Connection" />
+        </p>
+    </form>
+</div>
+<!-- FIN FORMULAIRE TYPE DE PAIEMENT / END PAYMENT FORM TEMPLATE -->
+<script type="text/javascript">
+    document.forms['PaymentRequest'].submit();
+</script>
+{/block}
+
+{block name="after-javascript-include"}{/block}
