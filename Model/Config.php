@@ -14,6 +14,7 @@ class Config implements ConfigInterface {
     protected $CMCIC_URLOK=null;
     protected $CMCIC_URLKO=null;
     protected $CMCIC_PAGE=null;
+    protected $CMCIC_URLRECEIVE=null;
 
     public function __construct()
     {
@@ -64,7 +65,7 @@ class Config implements ConfigInterface {
             }
         } elseif(!file_exists($path)) {
             throw new \Exception(Translator::getInstance()->trans("The file ").$file.
-                                Translator::getInstance()->trans(" doesn't exist. You have to create it in order to use this module. PLease see module's configuration page."));
+                                Translator::getInstance()->trans(" doesn't exist. You have to create it in order to use this module. Please see module's configuration page."));
         } else {
             throw new \Exception(Translator::getInstance()->trans("Can't read file ").$file.". ".
                                 Translator::getInstance()->trans("Please change the rights on the file."));
@@ -76,6 +77,7 @@ class Config implements ConfigInterface {
 
     /**
      * @param string $CMCIC_PAGE
+	 * @return CmCICModelConfigInterface
      */
     public function setCMCICPAGE($CMCIC_PAGE)
     {
@@ -85,6 +87,7 @@ class Config implements ConfigInterface {
 
     /**
      * @param string $CMCIC_KEY
+	 * @return CmCICModelConfigInterface
      */
     public function setCMCICKEY($CMCIC_KEY)
     {
@@ -94,6 +97,7 @@ class Config implements ConfigInterface {
 
     /**
      * @param string $CMCIC_CODESOCIETE
+	 * @return CmCICModelConfigInterface
      */
     public function setCMCICCODESOCIETE($CMCIC_CODESOCIETE)
     {
@@ -102,6 +106,7 @@ class Config implements ConfigInterface {
     }
     /**
      * @param string $CMCIC_SERVEUR
+	 * @return CmCICModelConfigInterface
      */
     public function setCMCICSERVER($CMCIC_SERVER)
     {
@@ -111,6 +116,7 @@ class Config implements ConfigInterface {
 
     /**
      * @param string $CMCIC_TPE
+	 * @return CmCICModelConfigInterface
      */
     public function setCMCICTPE($CMCIC_TPE)
     {
@@ -120,6 +126,7 @@ class Config implements ConfigInterface {
 
     /**
      * @param string $CMCIC_URLKO
+	 * @return CmCICModelConfigInterface
      */
     public function setCMCICURLKO($CMCIC_URLKO)
     {
@@ -129,6 +136,7 @@ class Config implements ConfigInterface {
 
     /**
      * @param string $CMCIC_URLOK
+	 * @return CmCICModelConfigInterface
      */
     public function setCMCICURLOK($CMCIC_URLOK)
     {
@@ -138,10 +146,21 @@ class Config implements ConfigInterface {
 
     /**
      * @param string $CMCIC_VERSION
+	 * @return CmCICModelConfigInterface
      */
     public function setCMCICVERSION($CMCIC_VERSION)
     {
         $this->CMCIC_VERSION = $CMCIC_VERSION;
+        return $this;
+    }
+
+    /**
+     * @param string $CMCIC_URLRECEIVE
+	 * @return CmCICModelConfigInterface
+     */
+    public function setCMCICURLRECEIVE($CMCIC_URLRECEIVE)
+    {
+        $this->CMCIC_URLRECEIVE = $CMCIC_URLRECEIVE;
         return $this;
     }
 }

@@ -24,12 +24,11 @@
 namespace CmCIC;
 
 use Propel\Runtime\Connection\ConnectionInterface;
-use Symfony\Component\HttpFoundation\Response;
-use Thelia\Model\OrderStatusQuery;
 use Thelia\Model\ModuleImageQuery;
 use Thelia\Model\Order;
 use Thelia\Module\BaseModule;
 use Thelia\Module\PaymentModuleInterface;
+use Thelia\Tools\Redirect;
 use Thelia\Tools\URL;
 
 class CmCIC extends BaseModule implements  PaymentModuleInterface
@@ -60,8 +59,7 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
      */
     public function pay(Order $order)
     {
-        $response = new Response("", 200, array("refresh"=>"0;".URL::getInstance()->absoluteUrl("/module/cmcic/bankservice/").$order->getId()));
-        $response->send();
+        Redirect::exec(URL::getInstance()->absoluteUrl("/module/cmcic/bankservice/").$order->getId());
     }
 
     public function getRequest() {

@@ -6,9 +6,9 @@ interface ConfigInterface {
     public function write($file=null);
     public static function read($file=null);
 
-    // variables access
+    // variables setters
     /*
-     * @return CmCIC\\Model\\ConfigInterface
+     * @return CmCIC\Model\ConfigInterface
      */
     public function setCMCICPAGE($CMCIC_PAGE);
     
@@ -46,5 +46,9 @@ interface ConfigInterface {
      * @return CmCIC\Model\ConfigInterface
      */
     public function setCMCICVERSION($CMCIC_VERSION);
-    
+
+    /*
+     * @return CmCIC\Model\ConfigInterface
+     */
+    public function setCMCICURLRECEIVE($CMCIC_URLRECEIVE);
 }

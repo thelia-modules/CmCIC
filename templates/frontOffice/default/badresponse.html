@@ -1,0 +1,41 @@
+{extends file="layout.tpl"}
+
+{* Security *}
+{block name="no-return-functions" prepend}
+{check_auth context="front" role="CUSTOMER" login_tpl="login"}
+{/block}
+
+{* Breadcrumb *}
+{block name='no-return-functions' append}
+{$breadcrumbs = [
+['title' => {intl l="Redirect to bank service"}]
+]}
+{/block}
+
+{block name="body-class"}page-gotobankservice{/block}
+
+{block name="main-content"}
+<div class="panel">
+
+    <div class="panel-heading clearfix">
+        {intl l="A problem occured"}.
+    </div>
+    <!-- PAYMENT FORM TEMPLATE -->
+    <div class="panel-body">
+        <p>
+            {intl l="A problem occured during the paiement of the order: "}<br/>
+            {loop name="badresponseorder" type="order" id={$order_id}}
+                {$REF}
+            {/loop}
+            <br/>
+            {intl l="Please try again to order"}
+        </p>
+    </div>
+</div>
+<!-- FIN FORMULAIRE TYPE DE PAIEMENT / END PAYMENT FORM TEMPLATE -->
+<script type="text/javascript">
+    document.forms['PaymentRequest'].submit();
+</script>
+{/block}
+
+{block name="after-javascript-include"}{/block}

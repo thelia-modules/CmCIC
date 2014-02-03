@@ -1,5 +1,25 @@
 <?php
-
+/*************************************************************************************/
+/*                                                                                   */
+/*      Thelia	                                                                     */
+/*                                                                                   */
+/*      Copyright (c) OpenStudio                                                     */
+/*      email : info@thelia.net                                                      */
+/*      web : http://www.thelia.net                                                  */
+/*                                                                                   */
+/*      This program is free software; you can redistribute it and/or modify         */
+/*      it under the terms of the GNU General Public License as published by         */
+/*      the Free Software Foundation; either version 3 of the License                */
+/*                                                                                   */
+/*      This program is distributed in the hope that it will be useful,              */
+/*      but WITHOUT ANY WARRANTY; without even the implied warranty of               */
+/*      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                */
+/*      GNU General Public License for more details.                                 */
+/*                                                                                   */
+/*      You should have received a copy of the GNU General Public License            */
+/*	    along with this program. If not, see <http://www.gnu.org/licenses/>.         */
+/*                                                                                   */
+/*************************************************************************************/
 namespace CmCIC\Controller;
 
 use CmCIC\CmCIC;
@@ -66,7 +86,7 @@ class CmcicPayController extends BaseFrontController {
                 "date"=>date("d/m/Y:H:i:s"),
                 "montant"=>(string)$ord->getTotalAmount().$currency,
                 "reference"=>self::harmonise($ord->getId(),'numeric',12),
-                "url_retour"=>URL::getInstance()->absoluteUrl("/module/cmcic/receive"),
+                "url_retour"=>URL::getInstance()->absoluteUrl($c["CMCIC_URLRECEIVE"].(string)$ord->getId()),
                 "url_retour_ok"=>URL::getInstance()->absoluteUrl($c["CMCIC_URLOK"].(string)$ord->getId()),
                 "url_retour_err"=>URL::getInstance()->absoluteUrl($c["CMCIC_URLKO"].(string)$ord->getId()),
                 "lgue"=>strtoupper($this->getSession()->getLang()->getCode()),

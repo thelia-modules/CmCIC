@@ -15,11 +15,11 @@ class CmcicSaveConfig extends BaseAdminController {
     const CMCIC_VERSION = "3.0";
     const CMCIC_URLOK = "/order/placed/";
     const CMCIC_URLKO = "/module/cmcic/payfail/";
+    const CMCIC_URLRECEIVE = "/module/cmcic/receive/";
 
     public function save() {
         $error_message="";
         $conf = new Config();
-        $table = $conf::read(CmCIC::JSON_CONFIG_PATH);
         $form = new ConfigureCmCIC($this->getRequest());
         try {
             $vform = $this->validateForm($form);
@@ -41,6 +41,7 @@ class CmcicSaveConfig extends BaseAdminController {
                     ->setCMCICURLOK(self::CMCIC_URLOK)
                     ->setCMCICURLKO(self::CMCIC_URLKO)
                     ->setCMCICSERVER($serv)
+                    ->setCMCICURLRECEIVE(self::CMCIC_URLRECEIVE)
                     ->write(CmCIC::JSON_CONFIG_PATH)
                 ;
             } else {
