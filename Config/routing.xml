@@ -6,4 +6,13 @@
 		<default key="_controller">CmCIC\Controller\CmcicPayController::gotopage</default>
         <requirement key="order">\d+</requirement>
 	</route>
+
+    <route id="cmcic.payfail" path="/module/cmcic/payfail/{order}" methods="get">
+        <default key="_controller">CmCIC\Controller\CmcicPayResponse::payfail</default>
+        <requirement key="order">\d+</requirement>
+    </route>
+
+    <route id="cmcic.saveconfig" path="/admin/module/cmcic/saveconfig" methods="post">
+        <default key="_controller">CmCIC\Controller\CmcicSaveConfig::save</default>
+    </route>
 </routes>

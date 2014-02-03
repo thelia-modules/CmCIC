@@ -8,6 +8,7 @@ use Thelia\Controller\Front\BaseFrontController;
 use CmCIC\Model\Config;
 use Thelia\Model\OrderQuery;
 use Thelia\Tools\URL;
+use Thelia\Model\OrderStatusQuery;
 
 class CmcicPayController extends BaseFrontController {
 
@@ -24,8 +25,6 @@ class CmcicPayController extends BaseFrontController {
     protected $_sUsableKey;
 
     protected $config;
-
-    const ORDER_NOT_PAID = "not_paid";
 
     public static function harmonise($value, $type, $len)
     {
@@ -54,7 +53,7 @@ class CmcicPayController extends BaseFrontController {
     public function gotopage($order) {
         $ord = OrderQuery::create()->findPk($order);
         if($ord->getCustomerId() != $this->getSession()->getCustomerUser()->getId() ||
-            $ord->getOrderStatus()->getCode() != self::ORDER_NOT_PAID)
+            $ord->getOrderStatus()->getCode() != CmCIC::ORDER_NOT_PAID)
             $ord = null;
         if($ord !== null) {
             $c = Config::read(CmCIC::JSON_CONFIG_PATH);
@@ -68,8 +67,8 @@ class CmcicPayController extends BaseFrontController {
                 "montant"=>(string)$ord->getTotalAmount().$currency,
                 "reference"=>self::harmonise($ord->getId(),'numeric',12),
                 "url_retour"=>URL::getInstance()->absoluteUrl("/module/cmcic/receive"),
-                "url_retour_ok"=>URL::getInstance()->absoluteUrl("/order/placed/".(string)$ord->getId()),
-                "url_retour_err"=>URL::getInstance()->absoluteUrl("/module/cmcic/error"),
+                "url_retour_ok"=>URL::getInstance()->absoluteUrl($c["CMCIC_URLOK"].(string)$ord->getId()),
+                "url_retour_err"=>URL::getInstance()->absoluteUrl($c["CMCIC_URLKO"].(string)$ord->getId()),
                 "lgue"=>strtoupper($this->getSession()->getLang()->getCode()),
                 "societe"=>$c["CMCIC_CODESOCIETE"],
                 "texte-libre"=>base64_encode("J'aime le sirop de fraise. :)"),
@@ -110,6 +109,9 @@ class CmcicPayController extends BaseFrontController {
                 $this->_getUsableKey($c["CMCIC_KEY"])
             );
             $vars["MAC"] = $mac;
+
+            $ord->setStatusId(OrderStatusQuery::create()->findOneByCode(CmCIC::ORDER_CANCELLED)->getId())
+                ->save();
             return $this->render("gotobankservice",$vars);
         } else {
             throw new \Exception(Translator::getInstance()->trans("You shouldn't be here."));

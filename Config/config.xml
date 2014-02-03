@@ -5,12 +5,14 @@
         xsi:schemaLocation="http://thelia.net/schema/dic/config http://thelia.net/schema/dic/config/thelia-1.0.xsd">
 
     <loops>
+        <loop name="cmcic.check.rights" class="CmCIC\Loop\CheckRightsLoop" />
         <!-- sample definition
         <loop name="MySuperLoop" class="MyModule\Loop\MySuperLoop" />
         -->
     </loops>
 
     <forms>
+	<form name="cmcic.configire" class="CmCIC\Form\ConfigureCmCIC"/>
         <!--
         <form name="MyFormName" class="MyModule\Form\MySuperForm" />
         -->
@@ -28,12 +30,12 @@
         -->
     </templateDirectives>
 
-    <!--
+<!--
     <services>
-            <service id="hook.order.bank.service" class="CmCIC\Listener\GotoBankService">
-                <argument type="service" id="service_container"/>
+            <service id="hook.order.bank.service" class="CmCIC\Listener\GotoBankService" scope="request">
+                <argument type="service" id="request"/>
                 <tag name="kernel.event_subscriber"/>
             </service>
-    </services>
-    -->
+    </services>-->
+
 </config>

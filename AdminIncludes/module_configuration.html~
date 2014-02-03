@@ -1,0 +1,61 @@
+<div class="form-container">
+{form name="cmcic.configire"} 
+	<form action="" method="POST" {form_enctype form=$form}>
+		{form_hidden_fields form=$form}
+
+		{form_field form=$form field="com_key"}
+		<div class="form-group {if $error}has-error{/if}">
+			<label for="{$label_attr.for}" class="control-label">
+				{$label} :
+			</label>
+
+			<input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='com_key'}" class="form-control">
+		</div>
+		{/form_field}
+
+		{form_field form=$form field="TPE"}
+		<div class="form-group {if $error}has-error{/if}">
+			<label for="{$label_attr.for}" class="control-label">
+				{$label} :
+			</label>
+
+			<input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='TPE'}" class="form-control">
+		</div>
+		{/form_field}
+
+		{form_field form=$form field="com_soc"}
+		<div class="form-group {if $error}has-error{/if}">
+			<label for="{$label_attr.for}" class="control-label">
+				{$label} :
+			</label>
+
+			<input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='com_soc'}" class="form-control">
+		</div>
+		{/form_field}
+
+		{form_field form=$form field="server"}
+		<div class="form-group {if $error}has-error{/if}">
+			<label for="{$label_attr.for}" class="control-label">
+				{$label} :
+			</label>
+
+			<input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='server'}" class="form-control">
+		</div>
+		{/form_field}
+
+		{form_field form=$form field="page"}
+		<div class="form-group {if $error}has-error{/if}">
+			<label for="{$label_attr.for}" class="control-label">
+				{$label} :
+			</label>
+
+			<input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='page'}" class="form-control">
+		</div>
+		{/form_field}
+
+		<div class="form-group">
+			<button type="submit" name="save_mode" value="stay" class="form-submit-button btn btn-sm btn-default btn-success" title="{intl l='Save'}">{intl l='Save'} <span class="glyphicon glyphicon-ok"></span></button>
+		</div>
+	</form>
+{/form}
+</div>

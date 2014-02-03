@@ -32,7 +32,6 @@ class Config implements ConfigInterface {
 
     public function write($file=null) {
         $path = __DIR__."/../".$file;
-        var_dump($file);
         if((file_exists($path) ? is_writable($path):is_writable(__DIR__."/../Config/"))) {
             $vars= get_object_vars($this);
             $cond = true;

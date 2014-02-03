@@ -23,17 +23,20 @@
 
 namespace CmCIC;
 
-use Symfony\Component\Routing\Router;
 use Propel\Runtime\Connection\ConnectionInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Thelia\Model\OrderStatusQuery;
+use Thelia\Model\ModuleImageQuery;
 use Thelia\Model\Order;
 use Thelia\Module\BaseModule;
 use Thelia\Module\PaymentModuleInterface;
-use Thelia\Model\ModuleImageQuery;
-use Thelia\Controller\Front\BaseFrontController;
+use Thelia\Tools\URL;
 
 class CmCIC extends BaseModule implements  PaymentModuleInterface
 {
     const JSON_CONFIG_PATH = "/Config/config.json";
+    const ORDER_NOT_PAID = "not_paid";
+    const ORDER_CANCELLED = "canceled";
 
     public function postActivation(ConnectionInterface $con = null)
     {
@@ -57,7 +60,8 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
      */
     public function pay(Order $order)
     {
-        //$this->container->get('')->redirectToRoute("cmcic.bankservice");
+        $response = new Response("", 200, array("refresh"=>"0;".URL::getInstance()->absoluteUrl("/module/cmcic/bankservice/").$order->getId()));
+        $response->send();
     }
 
     public function getRequest() {
