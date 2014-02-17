@@ -28,6 +28,7 @@ use Thelia\Core\Template\Element\BaseLoop;
 use Thelia\Core\Template\Element\LoopResultRow;
 use Thelia\Core\Template\Element\LoopResult;
 use Thelia\Core\Template\Element\ArraySearchLoopInterface;
+use Thelia\Core\Translation\Translator;
 
 /**
  * Class CheckRightsLoop
@@ -46,19 +47,23 @@ class CheckRightsLoop extends BaseLoop implements ArraySearchLoopInterface
     {
         $ret = array();
         $dir = __DIR__."/../Config/";
+        if (!is_readable($dir)) {
+            $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't read Config directory"), "ERRFILE"=>"");
+        }
+        if (!is_writable($dir)) {
+            $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't write Config directory"), "ERRFILE"=>"");
+        }
         if ($handle = opendir($dir)) {
             while (false !== ($file = readdir($handle))) {
                 if (strlen($file) > 5 && substr($file, -5) === ".json") {
                     if (!is_readable($dir.$file)) {
-                        $ret[] = array("ERRMES"=>"Can't read file", "ERRFILE"=>"CmCIC/Config/".$file);
+                        $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't read file"), "ERRFILE"=>"Icirelais/Config/".$file);
                     }
                     if (!is_writable($dir.$file)) {
-                        $ret[] = array("ERRMES"=>"Can't write file", "ERRFILE"=>"CmCIC/Config/".$file);
+                        $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't write file"), "ERRFILE"=>"Icirelais/Config/".$file);
                     }
                 }
             }
-        } else {
-            $ret[] = array("ERRMES"=>"Can't read Config directory", "ERRFILE"=>"");
         }
 
         return $ret;

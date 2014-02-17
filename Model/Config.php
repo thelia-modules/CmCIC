@@ -11,10 +11,7 @@ class Config implements ConfigInterface {
     protected $CMCIC_CODESOCIETE=null;
     protected $CMCIC_VERSION=null;
     protected $CMCIC_SERVER=null;
-    protected $CMCIC_URLOK=null;
-    protected $CMCIC_URLKO=null;
     protected $CMCIC_PAGE=null;
-    protected $CMCIC_URLRECEIVE=null;
 
     public function __construct()
     {
@@ -124,25 +121,6 @@ class Config implements ConfigInterface {
         return $this;
     }
 
-    /**
-     * @param string $CMCIC_URLKO
-	 * @return CmCICModelConfigInterface
-     */
-    public function setCMCICURLKO($CMCIC_URLKO)
-    {
-        $this->CMCIC_URLKO = $CMCIC_URLKO;
-        return $this;
-    }
-
-    /**
-     * @param string $CMCIC_URLOK
-	 * @return CmCICModelConfigInterface
-     */
-    public function setCMCICURLOK($CMCIC_URLOK)
-    {
-        $this->CMCIC_URLOK = $CMCIC_URLOK;
-        return $this;
-    }
 
     /**
      * @param string $CMCIC_VERSION
@@ -151,16 +129,6 @@ class Config implements ConfigInterface {
     public function setCMCICVERSION($CMCIC_VERSION)
     {
         $this->CMCIC_VERSION = $CMCIC_VERSION;
-        return $this;
-    }
-
-    /**
-     * @param string $CMCIC_URLRECEIVE
-	 * @return CmCICModelConfigInterface
-     */
-    public function setCMCICURLRECEIVE($CMCIC_URLRECEIVE)
-    {
-        $this->CMCIC_URLRECEIVE = $CMCIC_URLRECEIVE;
         return $this;
     }
 }

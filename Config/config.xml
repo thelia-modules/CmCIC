@@ -12,7 +12,7 @@
     </loops>
 
     <forms>
-	<form name="cmcic.configire" class="CmCIC\Form\ConfigureCmCIC"/>
+	<form name="cmcic.configure" class="CmCIC\Form\ConfigureCmCIC"/>
         <!--
         <form name="MyFormName" class="MyModule\Form\MySuperForm" />
         -->

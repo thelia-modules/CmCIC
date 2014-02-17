@@ -86,12 +86,12 @@ class CmcicPayController extends BaseFrontController {
                 "date"=>date("d/m/Y:H:i:s"),
                 "montant"=>(string)$ord->getTotalAmount().$currency,
                 "reference"=>self::harmonise($ord->getId(),'numeric',12),
-                "url_retour"=>URL::getInstance()->absoluteUrl($c["CMCIC_URLRECEIVE"].(string)$ord->getId()),
-                "url_retour_ok"=>URL::getInstance()->absoluteUrl($c["CMCIC_URLOK"].(string)$ord->getId()),
-                "url_retour_err"=>URL::getInstance()->absoluteUrl($c["CMCIC_URLKO"].(string)$ord->getId()),
+                "url_retour"=>URL::getInstance()->absoluteUrl($this->getRouteFromRouter("router.cmcic", "cmcic.receive"))."/".(string)$ord->getId(),
+                "url_retour_ok"=>URL::getInstance()->absoluteUrl($this->getRoute("order.placed",array("order_id"=>(string)$ord->getId()))),
+                "url_retour_err"=>URL::getInstance()->absoluteUrl($this->getRouteFromRouter("router.cmcic", "cmcic.payfail",array("order_id"=>(string)$ord->getId()))),
                 "lgue"=>strtoupper($this->getSession()->getLang()->getCode()),
                 "societe"=>$c["CMCIC_CODESOCIETE"],
-                "texte-libre"=>base64_encode("J'aime le sirop de fraise. :)"),
+                "texte-libre"=>"0",
                 "mail"=>$this->getSession()->getCustomerUser()->getEmail(),
                 "nbrech"=>"",
                 "dateech1"=>"",
@@ -103,35 +103,33 @@ class CmcicPayController extends BaseFrontController {
                 "dateech4"=>"",
                 "montantech4"=>""
             );
-            $mac = $this->computeHmac(
-                sprintf(
-                    self::CMCIC_CGI1_FIELDS,
-                    $vars["TPE"],
-                    $vars["date"],
-                    $vars["montant"],
-                    $vars["reference"],
-                    $vars["texte-libre"],
-                    $vars["version"],
-                    $vars["lgue"],
-                    $vars["societe"],
-                    $vars["mail"],
-                    $vars["nbrech"],
-                    $vars["dateech1"],
-                    $vars["montantech1"],
-                    $vars["dateech2"],
-                    $vars["montantech2"],
-                    $vars["dateech3"],
-                    $vars["montantech3"],
-                    $vars["dateech4"],
-                    $vars["montantech4"],
-                    $opts
-                ),
-                $this->_getUsableKey($c["CMCIC_KEY"])
+            $hashable=sprintf(
+                self::CMCIC_CGI1_FIELDS,
+                $vars["TPE"],
+                $vars["date"],
+                $vars["montant"],
+                $vars["reference"],
+                $vars["texte-libre"],
+                $vars["version"],
+                $vars["lgue"],
+                $vars["societe"],
+                $vars["mail"],
+                $vars["nbrech"],
+                $vars["dateech1"],
+                $vars["montantech1"],
+                $vars["dateech2"],
+                $vars["montantech2"],
+                $vars["dateech3"],
+                $vars["montantech3"],
+                $vars["dateech4"],
+                $vars["montantech4"],
+                $opts
+            );
+            $mac = self::computeHmac(
+                $hashable,
+                self::getUsableKey($c["CMCIC_KEY"])
             );
             $vars["MAC"] = $mac;
-
-            $ord->setStatusId(OrderStatusQuery::create()->findOneByCode(CmCIC::ORDER_CANCELLED)->getId())
-                ->save();
             return $this->render("gotobankservice",$vars);
         } else {
             throw new \Exception(Translator::getInstance()->trans("You shouldn't be here."));
@@ -139,7 +137,7 @@ class CmcicPayController extends BaseFrontController {
 
     }
 
-    private function _getUsableKey($key) {
+    public static  function getUsableKey($key) {
 
         $hexStrKey  = substr($key, 0, 38);
         $hexFinal   = "" . substr($key, 38, 2) . "00";
@@ -159,29 +157,10 @@ class CmcicPayController extends BaseFrontController {
         return pack("H*", $hexStrKey);
     }
 
-    public function computeHmac($sData, $key) {
-
+    public static function computeHmac($sData, $key) {
         return strtolower(hash_hmac("sha1", $sData, $key));
-
-        // If you have don't have PHP 5 >= 5.1.2 and PECL hash >= 1.1
-        // you may use the hmac_sha1 function defined below
-        //return strtolower($this->hmac_sha1($this->_sUsableKey, $sData));
     }
 
-    public function hmac_sha1 ($key, $data) {
-
-        $length = 64; // block length for SHA1
-        if (strlen($key) > $length) {
-            $key = pack("H*",sha1($key));
-        }
-        $key  = str_pad($key, $length, chr(0x00));
-        $ipad = str_pad('', $length, chr(0x36));
-        $opad = str_pad('', $length, chr(0x5c));
-        $k_ipad = $key ^ $ipad ;
-        $k_opad = $key ^ $opad;
-
-        return sha1($k_opad  . pack("H*",sha1($k_ipad . $data)));
-    }
 
     public static function HtmlEncode ($data)
     {

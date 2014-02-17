@@ -35,7 +35,22 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
 {
     const JSON_CONFIG_PATH = "/Config/config.json";
     const ORDER_NOT_PAID = "not_paid";
+    const ORDER_PAID_ID = 2;
     const ORDER_CANCELLED = "canceled";
+
+    /**
+     *
+     * This method is call on Payment loop.
+     *
+     * If you return true, the payment method will de display
+     * If you return false, the payment method will not be display
+     *
+     * @return boolean
+     */
+    public function isValidPayment()
+    {
+        // TODO: Implement isValidPayment() method.
+    }
 
     public function postActivation(ConnectionInterface $con = null)
     {
@@ -59,7 +74,7 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
      */
     public function pay(Order $order)
     {
-        Redirect::exec(URL::getInstance()->absoluteUrl("/module/cmcic/bankservice/").$order->getId());
+        Redirect::exec(URL::getInstance()->absoluteUrl("/cmcic/bankservice/").$order->getId());
     }
 
     public function getRequest() {

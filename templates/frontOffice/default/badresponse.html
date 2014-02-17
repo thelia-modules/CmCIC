@@ -23,7 +23,7 @@
     <!-- PAYMENT FORM TEMPLATE -->
     <div class="panel-body">
         <p>
-            {intl l="A problem occured during the paiement of the order: "}<br/>
+            {$msg}<br/>
             {loop name="badresponseorder" type="order" id={$order_id}}
                 {$REF}
             {/loop}
@@ -32,10 +32,9 @@
         </p>
     </div>
 </div>
-<!-- FIN FORMULAIRE TYPE DE PAIEMENT / END PAYMENT FORM TEMPLATE -->
-<script type="text/javascript">
-    document.forms['PaymentRequest'].submit();
-</script>
+<a class="btn btn-checkout-home" role="button" href="{url path="/"}">
+    <span>{intl l="Home"}</span>
+</a>
 {/block}
 
 {block name="after-javascript-include"}{/block}

@@ -2,14 +2,14 @@
     <!-- Errors -->
     {loop name="checkrights" type="cmcic.check.rights"}
     <div class="alert alert-danger">
-        <p>{intl l="{$ERRMES}"}  {$ERRFILE} | {intl l="Please change the access rights"}.</p>
+        <p>{$ERRMES}  {$ERRFILE} | {intl l="Please change the access rights"}.</p>
     </div>
     {/loop}
 </div>
 {elseloop rel="checkrights"}
 <h2>{intl l="Configuration CmCIC"}</h2>
 <div class="form-container general-block-decorator">
-{form name="cmcic.configire"} 
+{form name="cmcic.configure"} 
 	<form action="{url path="/admin/module/cmcic/saveconfig"}" method="POST" {form_enctype form=$form}>
 		{form_hidden_fields form=$form}
 
@@ -94,7 +94,7 @@
         </div>
         {/form_field}
 		<div class="form-group">
-			<button type="submit" name="save_mode" value="stay" class="form-submit-button btn btn-sm btn-default btn-success" title="{intl l='Save'}">{intl l='Save'} <span class="glyphicon glyphicon-ok"></span></button>
+			<button type="submit" name="save_mode" value="stay" class="form-submit-button btn btn-sm btn-default btn-success" title="{intl l="Save"}">{intl l="Save"} <span class="glyphicon glyphicon-ok"></span></button>
 		</div>
 	</form>
 {/form}

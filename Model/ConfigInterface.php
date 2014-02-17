@@ -31,24 +31,10 @@ interface ConfigInterface {
      * @return CmCIC\Model\ConfigInterface
      */
     public function setCMCICTPE($CMCIC_TPE);
-    
-    /*
-     * @return CmCIC\Model\ConfigInterface
-     */
-    public function setCMCICURLKO($CMCIC_URLKO);
-    
-    /*
-     * @return CmCIC\Model\ConfigInterface
-     */
-    public function setCMCICURLOK($CMCIC_URLOK);
-    
+
     /*
      * @return CmCIC\Model\ConfigInterface
      */
     public function setCMCICVERSION($CMCIC_VERSION);
 
-    /*
-     * @return CmCIC\Model\ConfigInterface
-     */
-    public function setCMCICURLRECEIVE($CMCIC_URLRECEIVE);
 }
