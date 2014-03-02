@@ -25,7 +25,9 @@ namespace CmCIC;
 
 use CmCIC\Model\Config;
 use Propel\Runtime\Connection\ConnectionInterface;
+use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Template\TemplateDefinition;
+use Thelia\Model\Base\Template;
 use Thelia\Model\ModuleImageQuery;
 use Thelia\Model\Order;
 use Thelia\Module\BaseModule;
@@ -37,9 +39,6 @@ use Symfony\Component\Routing\Router;
 class CmCIC extends BaseModule implements  PaymentModuleInterface
 {
     const JSON_CONFIG_PATH = "/Config/config.json";
-    const ORDER_NOT_PAID = "not_paid";
-    const ORDER_PAID_ID = 2;
-    const ORDER_CANCELLED = "canceled";
 
     const CMCIC_CTLHMAC = "V1.04.sha1.php--[CtlHmac%s%s]-%s";
     const CMCIC_CTLHMACSTR = "CtlHmac%s%s";
@@ -156,9 +155,10 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
                 TemplateDefinition::FRONT_OFFICE
             )
         );
-        $render = $parser->render("gotobankservice",$vars);
 
-        var_dump($render); exit;
+        $render = $parser->render("gotobankservice.html",$vars);
+
+        return Response::create($render);
     }
 
     public static function harmonise($value, $type, $len)

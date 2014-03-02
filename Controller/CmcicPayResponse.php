@@ -32,6 +32,7 @@ use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
 use Thelia\Model\OrderQuery;
+use Thelia\Model\OrderStatus;
 
 
 /**
@@ -91,7 +92,7 @@ class CmcicPayResponse extends BaseFrontController {
         $config = Config::read(CmCIC::JSON_CONFIG_PATH);
 
         $hashable = sprintf(
-            CmcicPayController::CMCIC_CGI2_FIELDS,
+            CmCIC::CMCIC_CGI2_FIELDS,
             $config['CMCIC_TPE'],
             $request->get('date'),
             $request->get('montant'),
@@ -115,11 +116,11 @@ class CmcicPayResponse extends BaseFrontController {
         );
 
 
-        $mac = CmcicPayController::computeHmac(
+        $mac = CmCIC::computeHmac(
             $hashable,
-            CmcicPayController::getUsableKey($config["CMCIC_KEY"])
+            CmCIC::getUsableKey($config["CMCIC_KEY"])
         );
-        $response=CmcicPayController::CMCIC_CGI2_MACNOTOK.$hashable;
+        $response=CmCIC::CMCIC_CGI2_MACNOTOK.$hashable;
 
         if($mac === strtolower($request->get('MAC'))) {
             /*
@@ -128,7 +129,7 @@ class CmcicPayResponse extends BaseFrontController {
             $code = $request->get("code-retour");
             $msg = "";
             $event = new OrderEvent($order);
-            $event->setStatus(CmCIC::ORDER_PAID_ID);
+            $event->setStatus(OrderStatus::CODE_PAID);
 
 
             switch($code) {
@@ -152,7 +153,7 @@ class CmcicPayResponse extends BaseFrontController {
                 $log->info($msg);
             }
 
-            $response= CmcicPayController::CMCIC_CGI2_MACOK;
+            $response= CmCIC::CMCIC_CGI2_MACOK;
         }
         /*
          * Get log back to previous state
@@ -160,7 +161,7 @@ class CmcicPayResponse extends BaseFrontController {
         $log->setDestinations("\\Thelia\\Log\\Destination\\TlogDestinationRotatingFile");
 
         return Response::create(
-            sprintf(CmcicPayController::CMCIC_CGI2_RECEIPT,$response),
+            sprintf(CmCIC::CMCIC_CGI2_RECEIPT,$response),
             200,
             array(
                 "Content-type"=> "text/plain",
