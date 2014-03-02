@@ -28,50 +28,53 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Thelia\Form\BaseForm;
 use Thelia\Core\Translation\Translator;
 
-class ConfigureCmCIC extends BaseForm {
-	public function getName() {
-		return "configurecmcic";
-	}
+class ConfigureCmCIC extends BaseForm
+{
+    public function getName()
+    {
+        return "configurecmcic";
+    }
 
-	protected function buildForm() {
+    protected function buildForm()
+    {
         $values = null;
         $path = __DIR__."/../".CmCIC::JSON_CONFIG_PATH;
-        if(is_readable($path)) {
+        if (is_readable($path)) {
             $values = json_decode(file_get_contents($path),true);
         }
-		$this->formBuilder
-			->add('com_key', 'text', array(
-				'label' => Translator::getInstance()->trans('Merchant key'),
-				'label_attr' => array(
-					'for' => 'com_key'
-				),
+        $this->formBuilder
+            ->add('com_key', 'text', array(
+                'label' => Translator::getInstance()->trans('Merchant key'),
+                'label_attr' => array(
+                    'for' => 'com_key'
+                ),
                 'data' => (null === $values ?'':$values["CMCIC_KEY"]),
-				'constraints' => array(
-					new NotBlank()
-				)
-			))
-			->add('TPE', 'text', array(
-				'label' => Translator::getInstance()->trans('TPE'),
-				'label_attr' => array(
-					'for' => 'TPE'
-				),
+                'constraints' => array(
+                    new NotBlank()
+                )
+            ))
+            ->add('TPE', 'text', array(
+                'label' => Translator::getInstance()->trans('TPE'),
+                'label_attr' => array(
+                    'for' => 'TPE'
+                ),
                 'data' => (null === $values ?'':$values["CMCIC_TPE"]),
                 'constraints' => array(
-					new NotBlank()
-				)
-			))
-			->add('com_soc', 'text', array(
-				'label' => Translator::getInstance()->trans('Society code'),
-				'label_attr' => array(
-					'for' => 'com_soc'
-				),
+                    new NotBlank()
+                )
+            ))
+            ->add('com_soc', 'text', array(
+                'label' => Translator::getInstance()->trans('Society code'),
+                'label_attr' => array(
+                    'for' => 'com_soc'
+                ),
                 'data' => (null === $values ?'':$values["CMCIC_CODESOCIETE"]),
                 'constraints' => array(
-					new NotBlank()
-				)
-			))
-			->add('server', 'choice', array(
-				'label' => Translator::getInstance()->trans('server'),
+                    new NotBlank()
+                )
+            ))
+            ->add('server', 'choice', array(
+                'label' => Translator::getInstance()->trans('server'),
                 'choices' => array(
                     "cic" => "CIC",
                     "cm" => "Crédit Mutuel",
@@ -93,17 +96,17 @@ class ConfigureCmCIC extends BaseForm {
                                 )
                             )
                           )
-			))
-			->add('page', 'text', array(
-				'label' => Translator::getInstance()->trans('page'),
-				'label_attr' => array(
-					'for' => 'page'
-				),
+            ))
+            ->add('page', 'text', array(
+                'label' => Translator::getInstance()->trans('page'),
+                'label_attr' => array(
+                    'for' => 'page'
+                ),
                 'data' => (null === $values ?'':$values["CMCIC_PAGE"]),
-				'constraints' => array(
-					new NotBlank()
-				)
-			))
+                'constraints' => array(
+                    new NotBlank()
+                )
+            ))
             ->add('debug', 'checkbox', array(
                 'label' => "Debug",
                 'label_attr' => array(
@@ -111,7 +114,6 @@ class ConfigureCmCIC extends BaseForm {
                 ),
                 'value' => (null !== $values && preg_match("#test#i", $values["CMCIC_SERVER"]) ?"true":""),
             ))
-		;
-	}
+        ;
+    }
 }
-?>

@@ -8,7 +8,8 @@ use CmCIC\Model\Config;
 use CmCIC\Form\ConfigureCmCIC;
 use Thelia\Core\Translation\Translator;
 
-class CmcicSaveConfig extends BaseAdminController {
+class CmcicSaveConfig extends BaseAdminController
+{
     const CIC_SERVER = "https://ssl.paiement.cic-banques.fr/";
     const CM_SERVER = "https://paiement.creditmutuel.fr/";
     const OBC_SERVER = "https://ssl.paiement.banque-obc.fr/";
@@ -17,7 +18,8 @@ class CmcicSaveConfig extends BaseAdminController {
     const CMCIC_URLKO = "/module/cmcic/payfail/";
     const CMCIC_URLRECEIVE = "/module/cmcic/receive/";
 
-    public function save() {
+    public function save()
+    {
         $error_message="";
         $conf = new Config();
         $form = new ConfigureCmCIC($this->getRequest());
@@ -60,4 +62,3 @@ class CmcicSaveConfig extends BaseAdminController {
                 '_controller' => 'Thelia\\Controller\\Admin\\ModuleController::configureAction'));
     }
 }
-

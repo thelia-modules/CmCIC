@@ -32,7 +32,6 @@ use Thelia\Model\ModuleImageQuery;
 use Thelia\Model\Order;
 use Thelia\Module\BaseModule;
 use Thelia\Module\PaymentModuleInterface;
-use Thelia\Tools\Redirect;
 use Thelia\Tools\URL;
 use Symfony\Component\Routing\Router;
 
@@ -72,7 +71,7 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
     {
         /* insert the images from image folder if first module activation */
         $module = $this->getModuleModel();
-        if(ModuleImageQuery::create()->filterByModule($module)->count() == 0) {
+        if (ModuleImageQuery::create()->filterByModule($module)->count() == 0) {
             $this->deployImageFolder($module, sprintf('%s/images', __DIR__), $con);
         }
 
@@ -101,11 +100,11 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
             "version"=>$c["CMCIC_VERSION"],
             "TPE"=>$c["CMCIC_TPE"],
             "date"=>date("d/m/Y:H:i:s"),
-            "montant"=>(string)$order->getTotalAmount().$currency,
+            "montant"=>(string) $order->getTotalAmount().$currency,
             "reference"=>self::harmonise($order->getId(),'numeric',12),
-            "url_retour"=>URL::getInstance()->absoluteUrl($cmCicRouter->generate("cmcic.receive", array(), Router::ABSOLUTE_URL))."/".(string)$order->getId(),
-            "url_retour_ok"=>URL::getInstance()->absoluteUrl($mainRouter->generate("order.placed",array("order_id"=>(string)$order->getId()), Router::ABSOLUTE_URL)),
-            "url_retour_err"=>URL::getInstance()->absoluteUrl($cmCicRouter->generate("cmcic.payfail",array("order_id"=>(string)$order->getId()), Router::ABSOLUTE_URL)),
+            "url_retour"=>URL::getInstance()->absoluteUrl($cmCicRouter->generate("cmcic.receive", array(), Router::ABSOLUTE_URL))."/".(string) $order->getId(),
+            "url_retour_ok"=>URL::getInstance()->absoluteUrl($mainRouter->generate("order.placed",array("order_id"=>(string) $order->getId()), Router::ABSOLUTE_URL)),
+            "url_retour_err"=>URL::getInstance()->absoluteUrl($cmCicRouter->generate("cmcic.payfail",array("order_id"=>(string) $order->getId()), Router::ABSOLUTE_URL)),
             "lgue"=>strtoupper($this->getRequest()->getSession()->getLang()->getCode()),
             "societe"=>$c["CMCIC_CODESOCIETE"],
             "texte-libre"=>"0",
@@ -185,8 +184,8 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
         return $value;
     }
 
-    public static  function getUsableKey($key) {
-
+    public static function getUsableKey($key)
+    {
         $hexStrKey  = substr($key, 0, 38);
         $hexFinal   = "" . substr($key, 38, 2) . "00";
 
@@ -201,35 +200,33 @@ class CmCIC extends BaseModule implements  PaymentModuleInterface
                 $hexStrKey .= substr($hexFinal, 0, 2);
         }
 
-
         return pack("H*", $hexStrKey);
     }
 
-    public static function computeHmac($sData, $key) {
+    public static function computeHmac($sData, $key)
+    {
         return strtolower(hash_hmac("sha1", $sData, $key));
     }
 
-
-    public static function HtmlEncode ($data)
+    public static function HtmlEncode($data)
     {
         $SAFE_OUT_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890._-";
         $result = "";
-        for ($i=0; $i<strlen($data); $i++)
-        {
+        for ($i=0; $i<strlen($data); $i++) {
             if (strchr($SAFE_OUT_CHARS, $data{$i})) {
                 $result .= $data{$i};
-            }
-            else if (($var = bin2hex(substr($data,$i,1))) <= "7F"){
+            } elseif (($var = bin2hex(substr($data,$i,1))) <= "7F") {
                 $result .= "&#x" . $var . ";";
-            }
-            else
+            } else
                 $result .= $data{$i};
 
         }
+
         return $result;
     }
 
-    public function getRequest() {
+    public function getRequest()
+    {
         return $this->container->get('request');
     }
 
