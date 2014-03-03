@@ -3,11 +3,6 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-	<route id="cmcic.bankservice" path="/cmcic/bankservice/{order}" methods="get">
-		<default key="_controller">CmCIC\Controller\CmcicPayController::gotopage</default>
-        <requirement key="order">\d+</requirement>
-	</route>
-
     <route id="cmcic.payfail" path="/cmcic/payfail/{order_id}" methods="get">
         <default key="_controller">CmCIC\Controller\CmcicPayResponse::payfail</default>
         <requirement key="order_id">\d+</requirement>

@@ -32,41 +32,45 @@ use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
 use Thelia\Model\OrderQuery;
-
+use Thelia\Model\OrderStatus;
 
 /**
  * Class CmcicPayResponse
  * @package CmCIC\Controller
  * author Thelia <info@thelia.net>
  */
-class CmcicPayResponse extends BaseFrontController {
-
+class CmcicPayResponse extends BaseFrontController
+{
     /**
-     * @param int $order_id
+     * @param  int                                  $order_id
      * @return \Thelia\Core\HttpFoundation\Response
      */
-    public function payfail($order_id) {
+    public function payfail($order_id)
+    {
         /*
          * Empty cart
          */
         $event = new CartEvent($this->getSession()->getCart());
         $this->dispatch(TheliaEvents::CART_CLEAR, $event);
 
-        return $this->render("badresponse", array("order_id"=>$order_id,"msg"=>Translator::getInstance()->trans("A problem occured during the paiement of the order:")));
+        return $this->render("badresponse",
+            array(
+                "order_id" => $order_id,
+                "msg" => Translator::getInstance()->trans("A problem occured during the paiement of the order:")
+            )
+        );
     }
 
     /**
-     * @param int $order_id
      * @throws \Exception
      */
-    public function receiveResponse() {
-
+    public function receiveResponse()
+    {
         $request = $this->getRequest();
         $order_id = $request->get('reference');
 
         if(is_numeric($order_id))
-            $order_id=(int)$order_id;
-
+            $order_id=(int) $order_id;
 
         /*
          * Configure log output
@@ -77,13 +81,6 @@ class CmcicPayResponse extends BaseFrontController {
         $log->info("accessed");
 
         $order = OrderQuery::create()->findPk($order_id);
-        /*
-        if($order === null) {
-            Tlog::getInstance()->error("Error while receiving response from CMCIC: bad order id");
-            throw new \Exception(Translator::getInstance()->trans("An error occured, please contact the store's administrator."));
-        }
-*/
-
 
         /*
          * Retrieve HMac for CGI2
@@ -91,7 +88,7 @@ class CmcicPayResponse extends BaseFrontController {
         $config = Config::read(CmCIC::JSON_CONFIG_PATH);
 
         $hashable = sprintf(
-            CmcicPayController::CMCIC_CGI2_FIELDS,
+            CmCIC::CMCIC_CGI2_FIELDS,
             $config['CMCIC_TPE'],
             $request->get('date'),
             $request->get('montant'),
@@ -114,24 +111,20 @@ class CmcicPayResponse extends BaseFrontController {
             $request->get('pares')
         );
 
-
-        $mac = CmcicPayController::computeHmac(
+        $mac = CmCIC::computeHmac(
             $hashable,
-            CmcicPayController::getUsableKey($config["CMCIC_KEY"])
+            CmCIC::getUsableKey($config["CMCIC_KEY"])
         );
-        $response=CmcicPayController::CMCIC_CGI2_MACNOTOK.$hashable;
+        $response=CmCIC::CMCIC_CGI2_MACNOTOK.$hashable;
 
-        if($mac === strtolower($request->get('MAC'))) {
-            /*
-             * Blabla
-             */
+        if ($mac === strtolower($request->get('MAC'))) {
+
             $code = $request->get("code-retour");
-            $msg = "";
+            $msg = null;
             $event = new OrderEvent($order);
-            $event->setStatus(CmCIC::ORDER_PAID_ID);
+            $event->setStatus(OrderStatus::CODE_PAID);
 
-
-            switch($code) {
+            switch ($code) {
                 case "payetest":
                     $msg = "The test payment of the order ".$order->getRef()." has been successfully released. ";
                     $this->dispatch(TheliaEvents::ORDER_UPDATE_STATUS, $event);
@@ -148,11 +141,11 @@ class CmcicPayResponse extends BaseFrontController {
                     throw new \Exception(Translator::getInstance()->trans("An error occured, no valid code-retour"));
             }
 
-            if(!empty($msg)) {
+            if (!empty($msg)) {
                 $log->info($msg);
             }
 
-            $response= CmcicPayController::CMCIC_CGI2_MACOK;
+            $response= CmCIC::CMCIC_CGI2_MACOK;
         }
         /*
          * Get log back to previous state
@@ -160,7 +153,7 @@ class CmcicPayResponse extends BaseFrontController {
         $log->setDestinations("\\Thelia\\Log\\Destination\\TlogDestinationRotatingFile");
 
         return Response::create(
-            sprintf(CmcicPayController::CMCIC_CGI2_RECEIPT,$response),
+            sprintf(CmCIC::CMCIC_CGI2_RECEIPT,$response),
             200,
             array(
                 "Content-type"=> "text/plain",
