@@ -7,6 +7,8 @@ use Thelia\Controller\Admin\BaseAdminController;
 use CmCIC\Model\Config;
 use CmCIC\Form\ConfigureCmCIC;
 use Thelia\Core\Translation\Translator;
+use Thelia\Core\Security\Resource\AdminResources;
+use Thelia\Core\Security\AccessManager;
 
 class CmcicSaveConfig extends BaseAdminController
 {
@@ -20,6 +22,10 @@ class CmcicSaveConfig extends BaseAdminController
 
     public function save()
     {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('CmCIC'), AccessManager::UPDATE)) {
+            return $response;
+        }
+
         $error_message="";
         $conf = new Config();
         $form = new ConfigureCmCIC($this->getRequest());
