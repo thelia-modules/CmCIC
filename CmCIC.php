@@ -30,12 +30,13 @@ use Thelia\Core\Template\TemplateDefinition;
 use Thelia\Model\Base\Template;
 use Thelia\Model\ModuleImageQuery;
 use Thelia\Model\Order;
+use Thelia\Module\AbstractPaymentModule;
 use Thelia\Module\BaseModule;
 use Thelia\Module\PaymentModuleInterface;
 use Thelia\Tools\URL;
 use Symfony\Component\Routing\Router;
 
-class CmCIC extends BaseModule implements  PaymentModuleInterface
+class CmCIC extends AbstractPaymentModule
 {
     const JSON_CONFIG_PATH = "/Config/config.json";
 

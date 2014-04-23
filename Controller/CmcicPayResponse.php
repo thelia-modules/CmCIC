@@ -33,6 +33,7 @@ use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
 use Thelia\Model\OrderQuery;
 use Thelia\Model\OrderStatus;
+use Thelia\Model\OrderStatusQuery;
 
 /**
  * Class CmcicPayResponse
@@ -121,8 +122,12 @@ class CmcicPayResponse extends BaseFrontController
 
             $code = $request->get("code-retour");
             $msg = null;
+
+            $status = OrderStatusQuery::create()
+                ->findOneByCode(OrderStatus::CODE_PAID);
+
             $event = new OrderEvent($order);
-            $event->setStatus(OrderStatus::CODE_PAID);
+            $event->setStatus($status->getId());
 
             switch ($code) {
                 case "payetest":
