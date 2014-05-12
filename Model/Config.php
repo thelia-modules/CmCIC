@@ -77,7 +77,7 @@ class Config implements ConfigInterface
 
     /**
      * @param  string                    $CMCIC_PAGE
-     * @return CmCICModelConfigInterface
+     * @return $this
      */
     public function setCMCICPAGE($CMCIC_PAGE)
     {
@@ -88,7 +88,7 @@ class Config implements ConfigInterface
 
     /**
      * @param  string                    $CMCIC_KEY
-     * @return CmCICModelConfigInterface
+     * @return $this
      */
     public function setCMCICKEY($CMCIC_KEY)
     {
@@ -99,7 +99,7 @@ class Config implements ConfigInterface
 
     /**
      * @param  string                    $CMCIC_CODESOCIETE
-     * @return CmCICModelConfigInterface
+     * @return $this
      */
     public function setCMCICCODESOCIETE($CMCIC_CODESOCIETE)
     {
@@ -109,7 +109,7 @@ class Config implements ConfigInterface
     }
     /**
      * @param  string                    $CMCIC_SERVEUR
-     * @return CmCICModelConfigInterface
+     * @return $this
      */
     public function setCMCICSERVER($CMCIC_SERVER)
     {
@@ -120,7 +120,7 @@ class Config implements ConfigInterface
 
     /**
      * @param  string                    $CMCIC_TPE
-     * @return CmCICModelConfigInterface
+     * @return $this
      */
     public function setCMCICTPE($CMCIC_TPE)
     {
@@ -131,7 +131,7 @@ class Config implements ConfigInterface
 
     /**
      * @param  string                    $CMCIC_VERSION
-     * @return CmCICModelConfigInterface
+     * @return $this
      */
     public function setCMCICVERSION($CMCIC_VERSION)
     {

@@ -51,15 +51,7 @@ class CmcicPayResponse extends BaseFrontController
         /*
          * Empty cart
          */
-        $event = new CartEvent($this->getSession()->getCart());
-        $this->dispatch(TheliaEvents::CART_CLEAR, $event);
-
-        return $this->render("badresponse",
-            array(
-                "order_id" => $order_id,
-                "msg" => Translator::getInstance()->trans("A problem occured during the paiement of the order:")
-            )
-        );
+        return $this->render("order-failed", ["failed_order_id" => $order_id]);
     }
 
     /**

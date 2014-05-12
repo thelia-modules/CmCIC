@@ -45,11 +45,7 @@ class CmcicSaveConfig extends BaseAdminController
                     ->setCMCICCODESOCIETE($vform->get('com_soc')->getData())
                     ->setCMCICPAGE($vform->get('page')->getData())
                     ->setCMCICTPE($vform->get('TPE')->getData())
-                    ->setCMCICVERSION(self::CMCIC_VERSION)
-                    ->setCMCICURLOK(self::CMCIC_URLOK)
-                    ->setCMCICURLKO(self::CMCIC_URLKO)
                     ->setCMCICSERVER($serv)
-                    ->setCMCICURLRECEIVE(self::CMCIC_URLRECEIVE)
                     ->write(CmCIC::JSON_CONFIG_PATH)
                 ;
             } else {
