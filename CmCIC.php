@@ -101,7 +101,7 @@ class CmCIC extends AbstractPaymentModule
             "version"=>$c["CMCIC_VERSION"],
             "TPE"=>$c["CMCIC_TPE"],
             "date"=>date("d/m/Y:H:i:s"),
-            "montant"=>(string) $order->getTotalAmount().$currency,
+            "montant"=>(string) round($order->getTotalAmount(), 2).$currency,
             "reference"=>self::harmonise($order->getId(),'numeric',12),
             "url_retour"=>URL::getInstance()->absoluteUrl($cmCicRouter->generate("cmcic.receive", array(), Router::ABSOLUTE_URL))."/".(string) $order->getId(),
             "url_retour_ok"=>URL::getInstance()->absoluteUrl($mainRouter->generate("order.placed",array("order_id"=>(string) $order->getId()), Router::ABSOLUTE_URL)),
