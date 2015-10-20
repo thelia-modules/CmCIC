@@ -44,7 +44,7 @@ class ConfigureCmCIC extends BaseForm
         }
         $this->formBuilder
             ->add('com_key', 'text', array(
-                'label' => Translator::getInstance()->trans('Merchant key'),
+                'label' => Translator::getInstance()->trans('Merchant key', [], CmCIC::DOMAIN_NAME),
                 'label_attr' => array(
                     'for' => 'com_key'
                 ),
@@ -54,7 +54,7 @@ class ConfigureCmCIC extends BaseForm
                 )
             ))
             ->add('TPE', 'text', array(
-                'label' => Translator::getInstance()->trans('TPE'),
+                'label' => Translator::getInstance()->trans('TPE', [], CmCIC::DOMAIN_NAME),
                 'label_attr' => array(
                     'for' => 'TPE'
                 ),
@@ -64,7 +64,7 @@ class ConfigureCmCIC extends BaseForm
                 )
             ))
             ->add('com_soc', 'text', array(
-                'label' => Translator::getInstance()->trans('Society code'),
+                'label' => Translator::getInstance()->trans('Society code', [], CmCIC::DOMAIN_NAME),
                 'label_attr' => array(
                     'for' => 'com_soc'
                 ),
@@ -74,7 +74,7 @@ class ConfigureCmCIC extends BaseForm
                 )
             ))
             ->add('server', 'choice', array(
-                'label' => Translator::getInstance()->trans('server'),
+                'label' => Translator::getInstance()->trans('server', [], CmCIC::DOMAIN_NAME),
                 'choices' => array(
                     "cic" => "CIC",
                     "cm" => "Crédit Mutuel",
@@ -98,7 +98,7 @@ class ConfigureCmCIC extends BaseForm
                           )
             ))
             ->add('page', 'text', array(
-                'label' => Translator::getInstance()->trans('page'),
+                'label' => Translator::getInstance()->trans('page', [], CmCIC::DOMAIN_NAME),
                 'label_attr' => array(
                     'for' => 'page'
                 ),
@@ -114,6 +114,24 @@ class ConfigureCmCIC extends BaseForm
                 ),
                 'value' => (null !== $values && preg_match("#test#i", $values["CMCIC_SERVER"]) ?"true":""),
             ))
+            ->add(
+                'allowed_ips',
+                'textarea',
+                array(
+                    'required' => false,
+                    'label' => Translator::getInstance()->trans('Allowed IPs in test mode', [], CmCIC::DOMAIN_NAME),
+                    'data' => CmCIC::getConfigValue('allowed_ips', ''),
+                    'label_attr' => array(
+                        'for' => 'allowed_ips',
+                        'help' => Translator::getInstance()->trans(
+                            'List of IP addresses allowed to use this payment on the front-office when in test mode (your current IP is %ip). One address per line',
+                            array('%ip' => $this->getRequest()->getClientIp()),
+                            CmCIC::DOMAIN_NAME
+                        ),
+                        'rows' => 3
+                    )
+                )
+            )
         ;
     }
 }
