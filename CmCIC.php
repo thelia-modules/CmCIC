@@ -38,6 +38,7 @@ use Symfony\Component\Routing\Router;
 
 class CmCIC extends AbstractPaymentModule
 {
+    const DOMAIN_NAME = "cmcic";
     const JSON_CONFIG_PATH = "/Config/config.json";
 
     const CMCIC_CTLHMAC = "V1.04.sha1.php--[CtlHmac%s%s]-%s";
@@ -65,7 +66,27 @@ class CmCIC extends AbstractPaymentModule
      */
     public function isValidPayment()
     {
-        return true;
+        $debug = $this->getConfigValue('debug', false);
+
+        if ($debug == "0") {
+            return true;
+        }
+
+        $testAllowedIps = $this->getConfigValue('allowed_ips', '');
+
+        $raw_ips = explode("\n", $testAllowedIps);
+
+        $allowed_client_ips = array();
+
+        foreach($raw_ips as $ip) {
+            $allowed_client_ips[] = trim($ip);
+        }
+
+        $client_ip = $this->getRequest()->getClientIp();
+
+        $valid = in_array($client_ip, $allowed_client_ips);
+
+        return $valid;
     }
 
     public function postActivation(ConnectionInterface $con = null)

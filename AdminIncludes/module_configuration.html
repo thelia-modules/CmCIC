@@ -93,6 +93,13 @@
             <input type="checkbox" id="{$label_attr.for}" name="{$name}" value="{$value}" {if $value eq "true"} checked {/if} />
         </div>
         {/form_field}
+        {form_field field="allowed_ips"}
+            <label for="{$label_attr.for}" class="control-label">
+                {$label} :
+            </label>
+            <textarea rows="4" placeholder="{$label}" id="{$label_attr.for}" name="{$name}" class="form-control" title="{$label}" placeholder="{$label}">{$value}</textarea>
+            <span class="help-block">{$label_attr.help}</span>
+        {/form_field}
 		<div class="form-group">
 			<button type="submit" name="save_mode" value="stay" class="form-submit-button btn btn-sm btn-default btn-success" title="{intl l="Save"}">{intl l="Save"} <span class="glyphicon glyphicon-ok"></span></button>
 		</div>

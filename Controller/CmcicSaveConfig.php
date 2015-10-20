@@ -31,6 +31,9 @@ class CmcicSaveConfig extends BaseAdminController
         $form = new ConfigureCmCIC($this->getRequest());
         try {
             $vform = $this->validateForm($form);
+
+            CmCIC::setConfigValue('debug',$vform->get('debug')->getData() === true ? 1 : 0);
+            CmCIC::setConfigValue('allowed_ips',$vform->get('allowed_ips')->getData());
             // After post checks (PREG_MATCH) & create json file
             if(preg_match("#^\d{7}$#",$vform->get('TPE')->getData()) &&
                 preg_match("#^[a-z\d]{40}$#i", $vform->get('com_key')->getData()) &&
