@@ -93,7 +93,7 @@
             <input type="checkbox" id="{$label_attr.for}" name="{$name}" value="{$value}" {if $value eq "true"} checked {/if} />
         </div>
         {/form_field}
-        {form_field field="allowed_ips"}
+        {form_field form=$form field="allowed_ips"}
             <label for="{$label_attr.for}" class="control-label">
                 {$label} :
             </label>
