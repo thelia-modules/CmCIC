@@ -15,6 +15,7 @@ class CmcicSaveConfig extends BaseAdminController
     const CIC_SERVER = "https://ssl.paiement.cic-banques.fr/";
     const CM_SERVER = "https://paiement.creditmutuel.fr/";
     const OBC_SERVER = "https://ssl.paiement.banque-obc.fr/";
+    const MONETICO_SERVER = "https://p.monetico-services.com/";
     const CMCIC_VERSION = "3.0";
     const CMCIC_URLOK = "/order/placed/";
     const CMCIC_URLKO = "/module/cmcic/payfail/";
@@ -38,10 +39,10 @@ class CmcicSaveConfig extends BaseAdminController
             if(preg_match("#^\d{7}$#",$vform->get('TPE')->getData()) &&
                 preg_match("#^[a-z\d]{40}$#i", $vform->get('com_key')->getData()) &&
                 preg_match("#^[a-z\d]+$#i", $vform->get('com_soc')->getData()) &&
-                preg_match("#^cic|cm|obc$#", $vform->get('server')->getData())
+                preg_match("#^cic|cm|obc|mon$#", $vform->get('server')->getData())
             ) {
                 $serv = $vform->get('server')->getData();
-                $serv = ($serv === "cic" ?self::CIC_SERVER:($serv === "cm"?self::CM_SERVER:($serv === "obc" ?self::OBC_SERVER:""))).($vform->get('debug')->getData() === true ?"test/":"");
+                $serv = ($serv === "mon"? self::MONETICO_SERVER:("cic" ?self::CIC_SERVER:($serv === "cm"?self::CM_SERVER:($serv === "obc" ?self::OBC_SERVER:"")))).($vform->get('debug')->getData() === true ?"test/":"");
 
                 $conf->setCMCICKEY($vform->get('com_key')->getData())
                     ->setCMCICVERSION(self::CMCIC_VERSION)

@@ -78,7 +78,8 @@ class ConfigureCmCIC extends BaseForm
                 'choices' => array(
                     "cic" => "CIC",
                     "cm" => "Crédit Mutuel",
-                    "obc" => "OBC"
+                    "obc" => "OBC",
+                    "mon" => "MONETICO"
                 ),
                 'required' => 'true',
                 'expanded'=>true,
@@ -91,7 +92,10 @@ class ConfigureCmCIC extends BaseForm
                                     "cm":
                                     (preg_match("#banque-obc#i",$values["CMCIC_SERVER"])?
                                         "obc":
-                                        ""
+                                        (preg_match("#monetico#i",$values["CMCIC_SERVER"])?
+                                            "mon":
+                                            ""
+                                        )
                                     )
                                 )
                             )
