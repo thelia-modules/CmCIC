@@ -2,116 +2,74 @@
     <!-- Errors -->
     {loop name="checkrights" type="cmcic.check.rights"}
     <div class="alert alert-danger">
-        <p>{$ERRMES}  {$ERRFILE} | {intl l="Please change the access rights"}.</p>
+        <p>{$ERRMES}  {$ERRFILE} | {intl d='cmcic.ai' l="Please change the access rights"}.</p>
     </div>
     {/loop}
 </div>
 {elseloop rel="checkrights"}
-<h2>{intl l="Configuration CmCIC"}</h2>
-<div class="form-container general-block-decorator">
-{form name="cmcic.configure"} 
-	<form action="{url path="/admin/module/cmcic/saveconfig"}" method="POST" {form_enctype form=$form}>
-		{form_hidden_fields form=$form}
-
-        {form_field form=$form field="TPE"}
-        <div class="form-group {if $error}has-error{/if}">
-            <label for="{$label_attr.for}" class="control-label">
-                {$label} :
-            </label>
-
-            <input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='TPE'}" class="form-control" {literal}pattern="\d{7}"{/literal} />
+<div class="row">
+    <div class="col-md-12 general-block-decorator">
+        <div class="row">
+            <div class="col-md-12 title title-without-tabs">
+                {intl d='cmcic.ai' l="Configuration CmCIC"}
+            </div>
         </div>
-        {/form_field}
-		{form_field form=$form field="com_key"}
-		<div class="form-group {if $error}has-error{/if}">
-			<label for="{$label_attr.for}" class="control-label">
-				{$label} :
-			</label>
-
-			<input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='Merchant key'}" class="form-control" {literal}pattern="[a-zA-Z\d]{40}"{/literal} />
-		</div>
-		{/form_field}
-
-		{form_field form=$form field="com_soc"}
-		<div class="form-group {if $error}has-error{/if}">
-			<label for="{$label_attr.for}" class="control-label">
-				{$label} :
-			</label>
-
-			<input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='Society code'}" class="form-control" {literal}pattern="[a-zA-Z\d]+"{/literal} />
-		</div>
-		{/form_field}
-
-		{form_field form=$form field="server"}
-		<div class="form-group {if $error}has-error{/if}">
-				<label>{$label} :</label>
-			<table>
-                <tr>
-                    <td>
-                        <label for="cm">Crédit Mutuel:</label>&nbsp;
-                    </td>
-                    <td>
-                        <input type="radio"  id="cm" name="{$name}" value="cm" {if $data eq "cm"}checked{/if} />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="cic">CIC:</label>
-                    </td>
-                    <td>
-                        <input type="radio"  id="cic" name="{$name}" value="cic" {if $data eq "cic"}checked{/if}/>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="obc">OBC:</label>
-                    </td>
-                    <td>
-                        <input type="radio" name="{$name}" value="obc" id="obc" {if $data eq "obc"}checked{/if} />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="mon">MONETICO:</label>
-                    </td>
-                    <td>
-                        <input type="radio" name="{$name}" value="mon" id="mon" {if $data eq "mon"}checked{/if} />
-                    </td>
-                </tr>
-			</table>
-		</div>
-		{/form_field}
-
-		{form_field form=$form field="page"}
-		<div class="form-group {if $error}has-error{/if}">
-			<label for="{$label_attr.for}" class="control-label">
-				{$label} :
-			</label>
-
-			<input type="text" id="{$label_attr.for}" name="{$name}" value="{$value}" placeholder="{intl l='page'}" class="form-control"/>
-		</div>
-		{/form_field}
-
-        {form_field form=$form field="debug"}
-        <div class="form-group {if $error}has-error{/if}">
-            <label for="{$label_attr.for}" class="control-label">
-                {$label} :
-            </label>
-
-            <input type="checkbox" id="{$label_attr.for}" name="{$name}" value="{$value}" {if $value eq "true"} checked {/if} />
+        
+        <div class="form-container">
+            <div class="row">
+                <div class="col-md-12">
+                    {form name="cmcic.configure"} 
+                    <form action="{url path="/admin/module/cmcic/saveconfig"}" method="POST" {form_enctype form=$form}>
+                        {form_hidden_fields form=$form}
+                        
+                        {include file = "includes/inner-form-toolbar.html"
+                        hide_flags = true
+                        page_url   = "{url path='/admin/module/CmCIC'}"
+                        close_url  = "{url path='/admin/modules'}"
+                        }
+                        
+                        {if $form_error}
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="alert alert-danger">{$form_error_message}</div>
+                                </div>
+                            </div>
+                        {/if}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                {render_form_field field="TPE"}
+                                {render_form_field field="com_key"}
+                                {render_form_field field="com_soc"}
+                                <div class="well well-sm">
+                                    <p>{intl d='cmcic.ai' l="<strong>URL de retour</strong>: %url" url={url path="/cmcic/validation"}}</strong></p>
+                                    <p>This is the value you should provide for the "URL de Retour" parameter
+                                    in your bank back-office.</p>
+                                </div>
+                                
+                            </div>
+                            
+                            <div class="col-md-6">
+                                {render_form_field field="server"}
+                                {render_form_field field="page"}
+                                {render_form_field field="debug"}
+                                {render_form_field field="allowed_ips"}
+                                
+                                <div class="form-group ">
+                                    <label class="control-label">
+                                        {intl d='cmcic.ai' l='Transaction log'}
+                                    </label>
+                                    <p class="form-control-static">
+                                        {intl d='cmcic.ai' l='<a href="%url">Click here</a> to download server communications log' url={url path="/admin/module/cmcic/log"}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    {/form}
+                </div>
+            </div>
         </div>
-        {/form_field}
-        {form_field form=$form field="allowed_ips"}
-            <label for="{$label_attr.for}" class="control-label">
-                {$label} :
-            </label>
-            <textarea rows="4" placeholder="{$label}" id="{$label_attr.for}" name="{$name}" class="form-control" title="{$label}" placeholder="{$label}">{$value}</textarea>
-            <span class="help-block">{$label_attr.help}</span>
-        {/form_field}
-		<div class="form-group">
-			<button type="submit" name="save_mode" value="stay" class="form-submit-button btn btn-sm btn-default btn-success" title="{intl l="Save"}">{intl l="Save"} <span class="glyphicon glyphicon-ok"></span></button>
-		</div>
-	</form>
-{/form}
+    </div>
 </div>
 {/elseloop}
