@@ -17,18 +17,20 @@
 SUMMARY
 -------
 
-fr_FR:
+French:
 0.  Pré-requis
 1.  Installation
 2.  Utilisation
 
-en_US:
+English:
 0.  Prerequisites
 1.  Install notes
 2.  How to use
 
-fr_FR
------
+French
+------
+
+Un module de paiement pour le Crédit Mutuel, le CIC, Neuflize OBC et Monetico.
 
 ### Pré-requis
 
@@ -48,8 +50,10 @@ Le champ page n'a normalement pas besoin d'être changé, et sa valeur par défa
 La case "Mode Test" permet, quand elle est cochée, de faire fonctionner le module en mode test, c'est à dire, de passer
 des commandes à blanc avec des numéros de carte bancaire de test.
 
-en_US
------
+English
+-------
+
+A payment module for Crédit Mutuel, CIC, Neuflize OBC and Monetico
 
 ### Prerequisites
 
