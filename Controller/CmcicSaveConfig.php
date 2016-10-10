@@ -63,8 +63,6 @@ class CmcicSaveConfig extends BaseAdminController
             $error_message,
             $form
         );
-        $this->redirectToRoute("admin.module.configure",array(),
-            array ( 'module_code'=>"CmCIC",
-                '_controller' => 'Thelia\\Controller\\Admin\\ModuleController::configureAction'));
+        return new RedirectResponse(URL::getInstance()->absoluteUrl('/admin/module/CmCIC'));
     }
 }
