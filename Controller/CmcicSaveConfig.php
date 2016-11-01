@@ -81,6 +81,7 @@ class CmcicSaveConfig extends BaseAdminController
             
             CmCIC::setConfigValue('debug', $vform->get('debug')->getData());
             CmCIC::setConfigValue('allowed_ips', $vform->get('allowed_ips')->getData());
+            CmCIC::setConfigValue('send_confirmation_message_only_if_paid', $vform->get('send_confirmation_message_only_if_paid')->getData());
             
             // After post checks (PREG_MATCH) & create json file
             if (preg_match("#^\d{7}$#", $vform->get('TPE')->getData()) &&

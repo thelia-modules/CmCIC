@@ -153,6 +153,23 @@ class ConfigureCmCIC extends BaseForm
                         'rows' => 3
                     )
                 )
-            );
+            ) ->add(
+                'send_confirmation_message_only_if_paid',
+                'checkbox',
+                [
+                    'value' => 1,
+                    'data' => ! empty(CmCIC::getConfigValue('send_confirmation_message_only_if_paid', '')),
+                    'required' => false,
+                    'label' => $this->translator->trans('Send order confirmation on payment success', [], CmCIC::DOMAIN_NAME),
+                    'label_attr' => [
+                        'help' => $this->translator->trans(
+                            'If checked, the order confirmation message is sent to the customer only when the payment is successful. The order notification is always sent to the shop administrator',
+                            [],
+                            CmCIC::DOMAIN_NAME
+                        )
+                    ]
+                ]
+            )
+        ;
     }
 }
