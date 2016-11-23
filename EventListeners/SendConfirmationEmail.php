@@ -74,7 +74,7 @@ class SendConfirmationEmail implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            TheliaEvents::ORDER_UPDATE_STATUS           => array("updateStatus", 128),
+            TheliaEvents::ORDER_UPDATE_STATUS           => array("updateStatus", 100),
             TheliaEvents::ORDER_SEND_CONFIRMATION_EMAIL => array("sendConfirmationEmail", 129)
         );
     }
