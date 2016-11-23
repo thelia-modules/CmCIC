@@ -17,20 +17,20 @@
 SUMMARY
 -------
 
-fr_FR:
+French:
 0.  Pré-requis
 1.  Installation
 2.  Utilisation
-3.  Intégration
 
-en_US:
+English:
 0.  Prerequisites
 1.  Install notes
 2.  How to use
-3.  Integration
 
-fr_FR
------
+French
+------
+
+Un module de paiement pour le Crédit Mutuel, le CIC, Neuflize OBC et Monetico.
 
 ### Pré-requis
 
@@ -47,23 +47,18 @@ Pour installer le module cmcic, téléchargez l'archive et décompressez la dans
 Pour utiliser le module cmcic, allez dans le back-office, onglet Modules, et activez le,
 puis cliquez sur "Configurer" sur la ligne du module. Renseignez vos informations de commerçant.
 Le champ page n'a normalement pas besoin d'être changé, et sa valeur par défault est: paiement.cgi
-La case à cocher "Debug" permet, quand elle est cochée, de passer en mode test, c'est à dire, de passer des commandes
-à blanc avec de fausses CB.
+La case "Mode Test" permet, quand elle est cochée, de faire fonctionner le module en mode test, c'est à dire, de passer
+des commandes à blanc avec des numéros de carte bancaire de test.
 
-### Intégration
+English
+-------
 
-Ce module utilise deux pages:
-    - badresponse.html :  page d'erreur indiquant qu'il y a eut un soucis de communication avec les serveurs du cmcic.
-    - gotobankservice.html : page qui envoie le formulaire de demande de paiement au cmcic.
-Un exemple d'intégration pour le thème par default de Thelia est proposé.
-
-en_US
------
+A payment module for Crédit Mutuel, CIC, Neuflize OBC and Monetico
 
 ### Prerequisites
 
 When you sign a contract with CmCIC, you have to give them a "Return URL" for your website.
-This address is constructed like this: http://www.yoursite.com/cmcic/validation
+This address is built  like this: http://www.yoursite.com/cmcic/validation
 For example, for the website thelia.net, the address would be: http://www.thelia.net/cmcic/validation
 
 ### Install notes
@@ -75,11 +70,4 @@ To install the cmcic module, download the archive uncompress it in <path to thel
 To use this module, your first need to activate if in the Back-office, tab Modules,
 then click on "Configure" on the cmcic module line. Enter your cmcic account information and save.
 Then entry "page" is normally set as "paiement.cgi".
-The checkbox "Debug" allows you, when it is checked, to do fake orders with fake credit cards.
-
-### Integration
-
-This module uses two pages:
-    - badresponse.html : Error page indicating that a problem has been detected while connecting to cmcic servers.
-    - gotobankservice.html : Page that send the form to do a payment resquest with cmcic.
-An integration example is available for the default theme of Thelia.
+The checkbox "Test Mode" allows you, when it is checked, to do fake orders with test credit cards.

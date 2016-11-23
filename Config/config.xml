@@ -6,36 +6,19 @@
 
     <loops>
         <loop name="cmcic.check.rights" class="CmCIC\Loop\CheckRightsLoop" />
-        <!-- sample definition
-        <loop name="MySuperLoop" class="MyModule\Loop\MySuperLoop" />
-        -->
     </loops>
 
     <forms>
-	<form name="cmcic.configure" class="CmCIC\Form\ConfigureCmCIC"/>
-        <!--
-        <form name="MyFormName" class="MyModule\Form\MySuperForm" />
-        -->
+	    <form name="cmcic.configure" class="CmCIC\Form\ConfigureCmCIC"/>
     </forms>
 
-    <commands>
-        <!--
-        <command class="MyModule\Command\MySuperCommand" />
-        -->
-    </commands>
-
-    <templateDirectives>
-        <!-- Sample definition
-        <templateDirectives class="MyModule\Directive\MyTemplateDirective" name="my_filter"/>
-        -->
-    </templateDirectives>
-
-<!--
     <services>
-            <service id="hook.order.bank.service" class="CmCIC\Listener\GotoBankService" scope="request">
-                <argument type="service" id="request"/>
-                <tag name="kernel.event_subscriber"/>
-            </service>
-    </services>-->
+        <service id="cmcic.confirmation.email" class="CmCIC\EventListeners\SendConfirmationEmail">
+            <argument type="service" id="mailer"/>
+            <argument type="service" id="event_dispatcher"/>
+
+            <tag name="kernel.event_subscriber"/>
+        </service>
+    </services>
 
 </config>

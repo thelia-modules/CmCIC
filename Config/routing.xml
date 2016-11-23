@@ -15,4 +15,8 @@
     <route id="cmcic.saveconfig" path="/admin/module/cmcic/saveconfig" methods="post">
         <default key="_controller">CmCIC\Controller\CmcicSaveConfig::save</default>
     </route>
+
+    <route id="cmcic.download.log" path="/admin/module/cmcic/log">
+        <default key="_controller">CmCIC\Controller\CmcicSaveConfig::downloadLog</default>
+    </route>
 </routes>

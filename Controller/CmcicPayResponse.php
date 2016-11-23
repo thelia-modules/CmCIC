@@ -17,19 +17,18 @@
 /*      GNU General Public License for more details.                                 */
 /*                                                                                   */
 /*      You should have received a copy of the GNU General Public License            */
-/*	    along with this program. If not, see <http://www.gnu.org/licenses/>.     */
+/*	    along with this program. If not, see <http://www.gnu.org/licenses/>.         */
 /*                                                                                   */
 /*************************************************************************************/
+
 namespace CmCIC\Controller;
 
 use CmCIC\CmCIC;
 use CmCIC\Model\Config;
 use Thelia\Controller\Front\BaseFrontController;
-use Thelia\Core\Event\Cart\CartEvent;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\HttpFoundation\Response;
-use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
 use Thelia\Model\OrderQuery;
 use Thelia\Model\OrderStatus;
@@ -42,16 +41,18 @@ use Thelia\Model\OrderStatusQuery;
  */
 class CmcicPayResponse extends BaseFrontController
 {
-    /**
-     * @param  int                                  $order_id
-     * @return \Thelia\Core\HttpFoundation\Response
-     */
     public function payfail($order_id)
     {
-        /*
-         * Empty cart
-         */
-        return $this->render("order-failed", ["failed_order_id" => $order_id]);
+        $url = $this->getRouteFromRouter(
+            'router.front',
+            'order.failed',
+            [
+                'order_id' => $order_id,
+                'message' => $this->getTranslator()->trans("Your payment was rejected", [], CmCIC::DOMAIN_NAME)
+            ]
+        );
+    
+        return $this->generateRedirect($url);
     }
 
     /**
@@ -62,15 +63,16 @@ class CmcicPayResponse extends BaseFrontController
         $request = $this->getRequest();
         $order_id = $request->get('reference');
 
-        if(is_numeric($order_id))
-            $order_id=(int) $order_id;
-
+        if (is_numeric($order_id)) {
+            $order_id = (int)$order_id;
+        }
+        
         /*
          * Configure log output
          */
         $log = Tlog::getInstance();
         $log->setDestinations("\\Thelia\\Log\\Destination\\TlogDestinationFile");
-        $log->setConfig("\\Thelia\\Log\\Destination\\TlogDestinationFile", 0, THELIA_ROOT."log".DS."log-cmcic.txt");
+        $log->setConfig("\\Thelia\\Log\\Destination\\TlogDestinationFile", 0, THELIA_LOG_DIR . "log-cmcic.txt");
         $log->info("accessed");
 
         $order = OrderQuery::create()->findPk($order_id);
@@ -111,7 +113,6 @@ class CmcicPayResponse extends BaseFrontController
         $response=CmCIC::CMCIC_CGI2_MACNOTOK.$hashable;
 
         if ($mac === strtolower($request->get('MAC'))) {
-
             $code = $request->get("code-retour");
             $msg = null;
 
@@ -135,7 +136,9 @@ class CmcicPayResponse extends BaseFrontController
                     break;
                 default:
                     $log->error("Error while receiving response from CMCIC: code-retour not valid");
-                    throw new \Exception(Translator::getInstance()->trans("An error occured, no valid code-retour"));
+                    throw new \Exception(
+                        $this->getTranslator()->trans("An error occured, no valid code-retour", [], CmCIC::DOMAIN_NAME)
+                    );
             }
 
             if (!empty($msg)) {
@@ -150,7 +153,7 @@ class CmcicPayResponse extends BaseFrontController
         $log->setDestinations("\\Thelia\\Log\\Destination\\TlogDestinationRotatingFile");
 
         return Response::create(
-            sprintf(CmCIC::CMCIC_CGI2_RECEIPT,$response),
+            sprintf(CmCIC::CMCIC_CGI2_RECEIPT, $response),
             200,
             array(
                 "Content-type"=> "text/plain",

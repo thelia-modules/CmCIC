@@ -57,10 +57,10 @@ class CheckRightsLoop extends BaseLoop implements ArraySearchLoopInterface
             while (false !== ($file = readdir($handle))) {
                 if (strlen($file) > 5 && substr($file, -5) === ".json") {
                     if (!is_readable($dir.$file)) {
-                        $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't read file"), "ERRFILE"=>"Icirelais/Config/".$file);
+                        $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't read file"), "ERRFILE"=>"CmCIC/Config/".$file);
                     }
                     if (!is_writable($dir.$file)) {
-                        $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't write file"), "ERRFILE"=>"Icirelais/Config/".$file);
+                        $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't write file"), "ERRFILE"=>"CmCIC/Config/".$file);
                     }
                 }
             }
