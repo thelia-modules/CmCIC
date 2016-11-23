@@ -17,7 +17,7 @@ return array(
     'Merchant key' => 'Clé de cryptage',
     'Please change the rights on the file and/or directory.' => 'Veuillez changer les droits d\'accès au fichier/dossier',
     'Please change the rights on the file.' => 'Veuillez changer les droits d\'accès au fichier',
-    'Run in test mode' => 'Avtiver le mode test',
+    'Run in test mode' => 'Activer le mode test',
     'Send order confirmation on payment success' => 'Confirmation de commande si le paiement réussit',
     'Society code' => 'Code de la société',
     'TPE' => 'Code TPE',
