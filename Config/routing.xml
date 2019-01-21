@@ -8,6 +8,11 @@
         <requirement key="order_id">\d+</requirement>
     </route>
 
+    <route id="cmcic.payfail.with.message" path="/cmcic/payfail/{order_id}/{message}" methods="get">
+        <default key="_controller">CmCIC\Controller\CmcicPayResponse::payfail</default>
+        <requirement key="order_id">\d+</requirement>
+    </route>
+
     <route id="cmcic.receive" path="/cmcic/validation" methods="post">
         <default key="_controller">CmCIC\Controller\CmcicPayResponse::receiveResponse</default>
     </route>
