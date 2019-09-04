@@ -30,6 +30,8 @@ use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Template\TemplateDefinition;
 use Thelia\Model\ModuleImageQuery;
 use Thelia\Model\Order;
+use Thelia\Model\OrderAddress;
+use Thelia\Model\OrderAddressQuery;
 use Thelia\Module\AbstractPaymentModule;
 use Thelia\Tools\URL;
 
@@ -43,8 +45,6 @@ class CmCIC extends AbstractPaymentModule
     const CMCIC_CGI2_RECEIPT = "version=2\ncdr=%s";
     const CMCIC_CGI2_MACOK = "0";
     const CMCIC_CGI2_MACNOTOK = "1\n";
-    const CMCIC_CGI2_FIELDS = "%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*";
-    const CMCIC_CGI1_FIELDS = "%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s*%s";
     
     protected $sKey;
     protected $sUsableKey;
@@ -83,6 +83,10 @@ class CmCIC extends AbstractPaymentModule
             $valid = true;
         }
         
+        if ($this->getCurrentOrderTotalAmount() <= 0) {
+            $valid = false;
+        }
+        
         return $valid;
     }
     
@@ -102,13 +106,13 @@ class CmCIC extends AbstractPaymentModule
                 "fr_FR" => "Paiement par Carte Bancaire",
             )
         );
+		
     }
     
     public function pay(Order $order)
     {
-        $c = Config::read(CmCIC::JSON_CONFIG_PATH);
+		$c = Config::read(CmCIC::JSON_CONFIG_PATH);
         $currency = $order->getCurrency()->getCode();
-        $opts = "";
         $cmCicRouter = $this->container->get('router.cmcic');
         $mainRouter = $this->container->get('router.front');
         
@@ -118,45 +122,19 @@ class CmCIC extends AbstractPaymentModule
             "date" => date("d/m/Y:H:i:s"),
             "montant" => (string)round($order->getTotalAmount(), 2) . $currency,
             "reference" => $this->harmonise($order->getId(), 'numeric', 12),
-            "url_retour" => URL::getInstance()->absoluteUrl($cmCicRouter->generate("cmcic.receive", array(), Router::ABSOLUTE_URL)) . "/" . (string)$order->getId(),
             "url_retour_ok" => URL::getInstance()->absoluteUrl($mainRouter->generate("order.placed", array("order_id" => (string)$order->getId()), Router::ABSOLUTE_URL)),
             "url_retour_err" => URL::getInstance()->absoluteUrl($cmCicRouter->generate("cmcic.payfail", array("order_id" => (string)$order->getId()), Router::ABSOLUTE_URL)),
             "lgue" => strtoupper($this->getRequest()->getSession()->getLang()->getCode()),
+            "contexte_commande" => self::getCommandContext($order),
             "societe" => $c["CMCIC_CODESOCIETE"],
             "texte-libre" => "0",
             "mail" => $this->getRequest()->getSession()->getCustomerUser()->getEmail(),
-            "nbrech" => "",
-            "dateech1" => "",
-            "montantech1" => "",
-            "dateech2" => "",
-            "montantech2" => "",
-            "dateech3" => "",
-            "montantech3" => "",
-            "dateech4" => "",
-            "montantech4" => ""
+            "3dsdebrayable" => "0",
+            "ThreeDSecureChallenge" => "challenge_preferred",
         );
-        $hashable = sprintf(
-            self::CMCIC_CGI1_FIELDS,
-            $vars["TPE"],
-            $vars["date"],
-            $vars["montant"],
-            $vars["reference"],
-            $vars["texte-libre"],
-            $vars["version"],
-            $vars["lgue"],
-            $vars["societe"],
-            $vars["mail"],
-            $vars["nbrech"],
-            $vars["dateech1"],
-            $vars["montantech1"],
-            $vars["dateech2"],
-            $vars["montantech2"],
-            $vars["dateech3"],
-            $vars["montantech3"],
-            $vars["dateech4"],
-            $vars["montantech4"],
-            $opts
-        );
+		
+		$hashable = self::getHashable($vars);	
+				
         $mac = self::computeHmac(
             $hashable,
             self::getUsableKey($c["CMCIC_KEY"])
@@ -220,4 +198,62 @@ class CmCIC extends AbstractPaymentModule
     {
         return strtolower(hash_hmac("sha1", $sData, $key));
     }
+	
+	public static function getCommandContext(Order $order) {
+		
+		$orderAddressId = $order->getInvoiceOrderAddressId();
+        $orderAddress = OrderAddressQuery::create()->findPk($orderAddressId);
+		$billing = self::orderAddressForCbPayment($orderAddress);
+		
+		
+		$deliveryAddressId = $order->getDeliveryOrderAddressId();
+        $deliveryAddress = OrderAddressQuery::create()->findPk($deliveryAddressId);
+		$shipping = self::orderAddressForCbPayment($deliveryAddress);
+		
+		$commandContext = array("billing" => $billing,
+								"shipping" => $shipping);
+		
+		$json = json_encode($commandContext);				
+		$utf8 = utf8_encode( $json );
+		return base64_encode( $utf8 );
+	}
+	
+	public static function orderAddressForCbPayment(OrderAddress $orderAddress) {
+		
+		$address = array("name" => substr($orderAddress->getFirstname()." ".$orderAddress->getLastname()." ".$orderAddress->getCompany(), 0, 45),
+						 "firstName" => substr($orderAddress->getFirstname(), 0, 45),
+						 "lastName" => substr($orderAddress->getLastname(), 0, 45),
+						 "address" => substr($orderAddress->getAddress1()." ".$orderAddress->getAddress2()." ".$orderAddress->getAddress3(), 0, 255),
+						 "addressLine1" => substr($orderAddress->getAddress1(), 0, 50),
+						 "addressLine2" => substr($orderAddress->getAddress2(), 0, 50),
+						 "addressLine3" => substr($orderAddress->getAddress3(), 0, 50),
+						 "city" => substr($orderAddress->getCity(), 0, 50),
+						 "postalCode" => $orderAddress->getZipcode(),
+						);
+		
+		if($orderAddress->getState() != null)
+		{
+			$address["stateOrProvince"] = $orderAddress->getState()->getIsocode();
+		}
+		
+		$address["country"] = $orderAddress->getCountry()->getIsoalpha2();
+		$address["phone"] = (substr($orderAddress->getPhone(),0,1) == "+")? $orderAddress->getPhone():"";
+		$address["mobilePhone"] = (substr($orderAddress->getCellphone(),0,1) == "+")? $orderAddress->getPhone():"";
+		
+		return $address;
+	}
+	
+	// Get the new format for seal content, for DSP-2 (cf https://www.monetico-paiement.fr/fr/info/documentations/Monetico_Paiement_documentation_migration_3DSv2_1.0.pdf#%5B%7B%22num%22%3A83%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2C68%2C716%2C0%5D )
+	public static function getHashable($vars) {	
+		// Sort by keys according to ASCII order
+		ksort($vars);
+		
+		// Formats the values in the following way : Nom_champ=Valeur_champ
+		array_walk($vars, function (&$value, $key) {$value = "$key=$value";});
+		
+		// Make it as a single string with * as separation character
+		$hashable = join("*", $vars);	
+
+		return $hashable;
+	}	
 }
