@@ -1,0 +1,75 @@
+<div class="row">
+    <!-- Errors -->
+    {loop name="checkrights" type="cmcic.check.rights"}
+        <div class="alert alert-danger">
+            <p>{$ERRMES}  {$ERRFILE} | {intl d='cmcic.bo.default' l="Please change the access rights"}.</p>
+        </div>
+    {/loop}
+</div>
+{elseloop rel="checkrights"}
+    <div class="row">
+        <div class="col-md-12 general-block-decorator">
+            <div class="row">
+                <div class="col-md-12 title title-without-tabs">
+                    {intl d='cmcic.bo.default' l="Configuration CmCIC"}
+                </div>
+            </div>
+
+            <div class="form-container">
+                <div class="row">
+                    <div class="col-md-12">
+                        {form name="cmcic.configure"} 
+                            <form action="{url path="/admin/module/cmcic/saveconfig"}" method="POST" {form_enctype form=$form}>
+                                {form_hidden_fields form=$form}
+
+                                {include file = "includes/inner-form-toolbar.html"
+                                hide_flags = true
+                                page_url   = "{url path='/admin/module/CmCIC'}"
+                                close_url  = "{url path='/admin/modules'}"
+                                }
+
+                                {if $form_error}
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="alert alert-danger">{$form_error_message}</div>
+                                        </div>
+                                    </div>
+                                {/if}
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {render_form_field field="TPE"}
+                                        {render_form_field field="com_key"}
+                                        {render_form_field field="com_soc"}
+                                        <div class="well well-sm">
+                                            <p>{intl d='cmcic.bo.default' l="<strong>URL de retour</strong>: %url" url={url path="/cmcic/validation"}}</strong></p>
+                                            <p>{intl d='cmcic.bo.default' l="This is the value you should provide for the \"URL de Retour\" parameter in your bank back-office."}</p>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        {render_form_field field="server"}
+                                        {render_form_field field="page"}
+                                        {render_form_field field="send_confirmation_message_only_if_paid"}
+                                        {render_form_field field="debug"}
+                                        {render_form_field field="allowed_ips"}
+
+                                        <div class="form-group ">
+                                            <label class="control-label">
+                                                {intl d='cmcic.bo.default' l='Transaction log'}
+                                            </label>
+                                            <p class="form-control-static">
+                                                {intl d='cmcic.bo.default' l='<a href="%url">Click here</a> to download the communications log between the module and the bank server.' url={url path="/admin/module/cmcic/log"}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        {/form}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{/elseloop}

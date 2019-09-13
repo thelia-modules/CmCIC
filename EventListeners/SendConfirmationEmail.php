@@ -26,10 +26,10 @@ class SendConfirmationEmail implements EventSubscriberInterface
      * @var MailerFactory
      */
     protected $mailer;
-    
+
     /** @var  EventDispatcherInterface */
     protected $dispatcher;
-    
+
     /**
      * SendConfirmationEmail constructor.
      * @param MailerFactory $mailer
@@ -55,9 +55,12 @@ class SendConfirmationEmail implements EventSubscriberInterface
             }
         }
     }
-    /*
+
+    /**
      * @params OrderEvent $order
      * Checks if order payment module is paypal and if order new status is paid, send an email to the customer.
+     * @param OrderEvent $event
+     * @throws \Propel\Runtime\Exception\PropelException
      */
     public function updateStatus(OrderEvent $event)
     {
@@ -67,7 +70,7 @@ class SendConfirmationEmail implements EventSubscriberInterface
             if (CmCIC::getConfigValue('send_confirmation_message_only_if_paid')) {
                 $this->dispatcher->dispatch(TheliaEvents::ORDER_SEND_CONFIRMATION_EMAIL, $event);
             }
-            
+
             Tlog::getInstance()->debug("Confirmation email sent to customer " . $order->getCustomer()->getEmail());
         }
     }

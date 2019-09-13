@@ -21,4 +21,10 @@
         </service>
     </services>
 
+    <hooks>
+        <hook id="cmcic.back.hook" class="CmCIC\Hook\HookManager">
+            <tag name="hook.event_listener" event="module.configuration" type="back" method="onModuleConfigure" />
+        </hook>
+    </hooks>
+
 </config>
