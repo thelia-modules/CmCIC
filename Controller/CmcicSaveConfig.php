@@ -85,7 +85,7 @@ class CmcicSaveConfig extends BaseAdminController
             // After post checks (PREG_MATCH) & create json file
             if (preg_match("#^\d{7}$#", $vform->get('TPE')->getData()) &&
                 preg_match("#^[a-z\d]{40}$#i", $vform->get('com_key')->getData()) &&
-                preg_match("#^[a-z\d]+$#i", $vform->get('com_soc')->getData()) &&
+                preg_match("#^[a-z\-\d]+$#i", $vform->get('com_soc')->getData()) &&
                 preg_match("#^cic|cm|obc|mon$#", $vform->get('server')->getData())
             ) {
                 $serv = $vform->get('server')->getData();
