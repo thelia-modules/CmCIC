@@ -244,28 +244,37 @@ class CmCIC extends AbstractPaymentModule
      * @throws \Propel\Runtime\Exception\PropelException
      */
 	public static function orderAddressForCbPayment(OrderAddress $orderAddress) {
+        $address = array(
+            "name" => substr($orderAddress->getFirstname()." ".$orderAddress->getLastname()." ".$orderAddress->getCompany(), 0, 45),
+            "firstName" => substr($orderAddress->getFirstname(), 0, 45),
+            "lastName" => substr($orderAddress->getLastname(), 0, 45),
+            "addressLine1" => substr($orderAddress->getAddress1(), 0, 50),
+            "city" => substr($orderAddress->getCity(), 0, 50),
+            "postalCode" => $orderAddress->getZipcode(),
+            "country" => $orderAddress->getCountry()->getIsoalpha2()
+        );
 
-		$address = array("name" => substr($orderAddress->getFirstname()." ".$orderAddress->getLastname()." ".$orderAddress->getCompany(), 0, 45),
-						 "firstName" => substr($orderAddress->getFirstname(), 0, 45),
-						 "lastName" => substr($orderAddress->getLastname(), 0, 45),
-						 "address" => substr($orderAddress->getAddress1()." ".$orderAddress->getAddress2()." ".$orderAddress->getAddress3(), 0, 255),
-						 "addressLine1" => substr($orderAddress->getAddress1(), 0, 50),
-						 "addressLine2" => substr($orderAddress->getAddress2(), 0, 50),
-						 "addressLine3" => substr($orderAddress->getAddress3(), 0, 50),
-						 "city" => substr($orderAddress->getCity(), 0, 50),
-						 "postalCode" => $orderAddress->getZipcode(),
-						);
+        if (! empty($orderAddress->getAddress2())) {
+            $address["addressLine2"] = substr($orderAddress->getAddress2(), 0, 50);
+        }
 
-		if($orderAddress->getState() != null)
-		{
-			$address["stateOrProvince"] = $orderAddress->getState()->getIsocode();
-		}
+        if (! empty($orderAddress->getAddress3())) {
+            $address["addressLine3"] = substr($orderAddress->getAddress3(), 0, 50);
+        }
 
-		$address["country"] = $orderAddress->getCountry()->getIsoalpha2();
-		$address["phone"] = (substr($orderAddress->getPhone(),0,1) == "+")? $orderAddress->getPhone():"";
-		$address["mobilePhone"] = (substr($orderAddress->getCellphone(),0,1) == "+")? $orderAddress->getPhone():"";
+        if (! empty($orderAddress->getPhone())) {
+            $address["stateOrProvince"] = $orderAddress->getState()->getIsocode();
+        }
 
-		return $address;
+        if (substr($orderAddress->getPhone(),0,1) == "+") {
+            $address["phone"] = $orderAddress->getPhone();
+        }
+
+        if (substr($orderAddress->getCellphone(),0,1) == "+") {
+            $address["mobilePhone"] = $orderAddress->getCellphone();
+        }
+
+        return $address;
 	}
 
 	/**
