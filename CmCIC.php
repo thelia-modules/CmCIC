@@ -28,6 +28,7 @@ use Propel\Runtime\Connection\ConnectionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\Router;
 use Thelia\Core\HttpFoundation\Response;
+use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
 use Thelia\Model\ModuleImageQuery;
 use Thelia\Model\Order;
@@ -87,10 +88,29 @@ class CmCIC extends AbstractPaymentModule
         return $valid;
     }
 
+    /**
+     * @param ConnectionInterface|null $con
+     * @throws \Propel\Runtime\Exception\PropelException
+     * @throws \Exception
+     */
     public function postActivation(ConnectionInterface $con = null)
     {
         /* insert the images from image folder if first module activation */
+        $configFile = __DIR__ . self::JSON_CONFIG_PATH;
+        $configDistFile = __DIR__ . self::JSON_CONFIG_PATH . '.dist';
+
+        if (! file_exists($configFile)) {
+            if (! copy($configDistFile, $configFile)) {
+                throw new \Exception(
+                    Translator::getInstance()->trans(
+                        "Can't create file %file%. Please change the rights on the file and/or directory."
+                    )
+                );
+            }
+        }
+
         $module = $this->getModuleModel();
+
         if (ModuleImageQuery::create()->filterByModule($module)->count() == 0) {
             $this->deployImageFolder($module, sprintf('%s/images', __DIR__), $con);
         }
@@ -262,7 +282,7 @@ class CmCIC extends AbstractPaymentModule
             $address["addressLine3"] = substr($orderAddress->getAddress3(), 0, 50);
         }
 
-        if (! empty($orderAddress->getPhone())) {
+        if ($orderAddress->getState() !== null) {
             $address["stateOrProvince"] = $orderAddress->getState()->getIsocode();
         }
 
