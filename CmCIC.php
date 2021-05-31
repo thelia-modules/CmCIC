@@ -286,6 +286,10 @@ class CmCIC extends AbstractPaymentModule
             $address["stateOrProvince"] = $orderAddress->getState()->getIsocode();
         }
 
+        /*
+         We should not pass a phone number. This number is optionnal, but if it is provided, it should match the
+        documented regexp : (^[0-9]{2,20}$), which is not always the case, an may prevent payment !!
+
         if (substr($orderAddress->getPhone(),0,1) == "+") {
             $address["phone"] = $orderAddress->getPhone();
         }
@@ -293,9 +297,10 @@ class CmCIC extends AbstractPaymentModule
         if (substr($orderAddress->getCellphone(),0,1) == "+") {
             $address["mobilePhone"] = $orderAddress->getCellphone();
         }
+        */
 
         return $address;
-	}
+    }
 
 	/**
      * Get the new format for seal content, for DSP-2 (cf https://www.monetico-paiement.fr/fr/info/documentations/Monetico_Paiement_documentation_migration_3DSv2_1.0.pdf#%5B%7B%22num%22%3A83%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2C68%2C716%2C0%5D )
