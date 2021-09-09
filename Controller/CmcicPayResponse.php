@@ -25,6 +25,7 @@ namespace CmCIC\Controller;
 
 use CmCIC\CmCIC;
 use CmCIC\Model\Config;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thelia\Controller\Front\BaseFrontController;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
@@ -58,7 +59,7 @@ class CmcicPayResponse extends BaseFrontController
     /**
      * @throws \Exception
      */
-    public function receiveResponse()
+    public function receiveResponse(EventDispatcherInterface $eventDispatcher)
     {
         $request = $this->getRequest();
         $order_id = $request->get('reference');
@@ -109,11 +110,11 @@ class CmcicPayResponse extends BaseFrontController
             switch ($code) {
                 case "payetest":
                     $msg = "The test payment of the order ".$order->getRef()." has been successfully released. ";
-                    $this->dispatch(TheliaEvents::ORDER_UPDATE_STATUS, $event);
+                    $eventDispatcher->dispatch($event, TheliaEvents::ORDER_UPDATE_STATUS );
                     break;
                 case "paiement":
                     $msg = "The payment of the order ".$order->getRef()." has been successfully released. ";
-                    $this->dispatch(TheliaEvents::ORDER_UPDATE_STATUS, $event);
+                    $eventDispatcher->dispatch($event,TheliaEvents::ORDER_UPDATE_STATUS );
                     break;
                 case "Annulation":
                     $msg = "Error during the paiement: ".$this->getRequest()->get("motifrefus");

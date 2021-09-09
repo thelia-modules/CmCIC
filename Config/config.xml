@@ -8,10 +8,6 @@
         <loop name="cmcic.check.rights" class="CmCIC\Loop\CheckRightsLoop" />
     </loops>
 
-    <forms>
-	    <form name="cmcic.configure" class="CmCIC\Form\ConfigureCmCIC"/>
-    </forms>
-
     <services>
         <service id="cmcic.confirmation.email" class="CmCIC\EventListeners\SendConfirmationEmail">
             <argument type="service" id="mailer"/>

@@ -24,17 +24,16 @@
 namespace CmCIC\Form;
 
 use CmCIC\CmCIC;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Thelia\Core\Translation\Translator;
 use Thelia\Form\BaseForm;
 
 class ConfigureCmCIC extends BaseForm
 {
-    public function getName()
-    {
-        return "configurecmcic";
-    }
-    
     protected function buildForm()
     {
         $values = null;
@@ -43,44 +42,44 @@ class ConfigureCmCIC extends BaseForm
             $values = json_decode(file_get_contents($path), true);
         }
         $this->formBuilder
-            ->add('com_key', 'text', array(
+            ->add('com_key', TextType::class, [
                 'label' => Translator::getInstance()->trans('Merchant key', [], CmCIC::DOMAIN_NAME),
-                'label_attr' => array(
+                'label_attr' => [
                     'for' => 'com_key'
-                ),
+                ],
                 'data' => (null === $values ? '' : $values["CMCIC_KEY"]),
-                'constraints' => array(
+                'constraints' => [
                     new NotBlank()
-                )
-            ))
-            ->add('TPE', 'text', array(
+                ]
+            ])
+            ->add('TPE', TextType::class, [
                 'label' => Translator::getInstance()->trans('TPE', [], CmCIC::DOMAIN_NAME),
-                'label_attr' => array(
+                'label_attr' => [
                     'for' => 'TPE'
-                ),
+                ],
                 'data' => (null === $values ? '' : $values["CMCIC_TPE"]),
-                'constraints' => array(
+                'constraints' => [
                     new NotBlank()
-                )
-            ))
-            ->add('com_soc', 'text', array(
+                ]
+            ])
+            ->add('com_soc', TextType::class, [
                 'label' => Translator::getInstance()->trans('Society code', [], CmCIC::DOMAIN_NAME),
-                'label_attr' => array(
+                'label_attr' => [
                     'for' => 'com_soc'
-                ),
+                ],
                 'data' => (null === $values ? '' : $values["CMCIC_CODESOCIETE"]),
-                'constraints' => array(
+                'constraints' => [
                     new NotBlank()
-                )
-            ))
-            ->add('server', 'choice', array(
+                ]
+            ])
+            ->add('server', ChoiceType::class, [
                 'label' => Translator::getInstance()->trans('server', [], CmCIC::DOMAIN_NAME),
-                'choices' => array(
-                    "cic" => "CIC",
-                    "cm" => "Crédit Mutuel",
-                    "obc" => "OBC",
-                    "mon" => "MONETICO"
-                ),
+                'choices' => [
+                    "CIC" => "cic",
+                    "Crédit Mutuel" => "cm",
+                    "OBC" => "obc",
+                    "MONETICO" => "mon"
+                ],
                 'required' => 'true',
                 'expanded' => true,
                 'multiple' => false,
@@ -100,65 +99,65 @@ class ConfigureCmCIC extends BaseForm
                         )
                     )
                 ),
-                'label_attr' => array(
+                'label_attr' => [
                     'help' => Translator::getInstance()->trans(
                         "The module may be used with several banks. Please select your bank here.",
                         [],
                         CmCIC::DOMAIN_NAME
                     )
-                ),
+                ],
 
-            ))
-            ->add('page', 'text', array(
+            ])
+            ->add('page', TextType::class, [
                 'label' => Translator::getInstance()->trans('page', [], CmCIC::DOMAIN_NAME),
-                'label_attr' => array(
+                'label_attr' => [
                     'help' => Translator::getInstance()->trans(
                         "The page invoked on the payment server. The default should be OK in most cases.",
                         [],
                         CmCIC::DOMAIN_NAME
                     )
-                ),
+                ],
                 'data' => (null === $values ? '' : $values["CMCIC_PAGE"]),
-                'constraints' => array(
+                'constraints' => [
                     new NotBlank()
-                )
-            ))
-            ->add('debug', 'checkbox', array(
+                ]
+            ])
+            ->add('debug', CheckboxType::class, [
                 'label' => Translator::getInstance()->trans('Run in test mode', [], CmCIC::DOMAIN_NAME),
                 'required' => false,
-                'label_attr' => array(
+                'label_attr' => [
                     'for' => 'debug',
                     'help' => Translator::getInstance()->trans(
                         "Check this box to test the payment system, using test credit cards to simulate various situations.",
                         [],
                         CmCIC::DOMAIN_NAME
                     )
-                ),
+                ],
                 'data' => boolval(CmCIC::getConfigValue('debug', false))
-            ))
+            ])
             ->add(
                 'allowed_ips',
-                'textarea',
-                array(
+                TextareaType::class,
+                [
                     'required' => false,
                     'label' => Translator::getInstance()->trans('Allowed IPs in test mode', [], CmCIC::DOMAIN_NAME),
                     'data' => CmCIC::getConfigValue('allowed_ips', ''),
-                    'label_attr' => array(
+                    'label_attr' => [
                         'for' => 'allowed_ips',
                         'help' => Translator::getInstance()->trans(
                             'List of IP addresses allowed to use this payment on the front-office when in test mode (your current IP is %ip). One address per line',
-                            array('%ip' => $this->getRequest()->getClientIp()),
+                            ['%ip' => $this->getRequest()->getClientIp()],
                             CmCIC::DOMAIN_NAME
                         ),
                         'rows' => 3
-                    )
-                )
-            ) ->add(
+                    ]
+                ]
+            )->add(
                 'send_confirmation_message_only_if_paid',
-                'checkbox',
+                CheckboxType::class,
                 [
                     'value' => 1,
-                    'data' => ! empty(CmCIC::getConfigValue('send_confirmation_message_only_if_paid', '')),
+                    'data' => !empty(CmCIC::getConfigValue('send_confirmation_message_only_if_paid', '')),
                     'required' => false,
                     'label' => $this->translator->trans('Send order confirmation on payment success', [], CmCIC::DOMAIN_NAME),
                     'label_attr' => [
@@ -169,7 +168,6 @@ class ConfigureCmCIC extends BaseForm
                         )
                     ]
                 ]
-            )
-        ;
+            );
     }
 }

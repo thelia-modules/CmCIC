@@ -27,9 +27,11 @@ use CmCIC\CmCIC;
 use CmCIC\Form\ConfigureCmCIC;
 use CmCIC\Model\Config;
 use Thelia\Controller\Admin\BaseAdminController;
+use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
+use Thelia\Core\Translation\Translator;
 use Thelia\Tools\URL;
 
 class CmcicSaveConfig extends BaseAdminController
@@ -53,7 +55,7 @@ class CmcicSaveConfig extends BaseAdminController
         $data = @file_get_contents(THELIA_LOG_DIR . "log-cmcic.txt");
 
         if (empty($data)) {
-            $data = $this->getTranslator()->trans("The CmCIC server log is currently empty.", [], CmCIC::DOMAIN_NAME);
+            $data = Translator::getInstance()->trans("The CmCIC server log is currently empty.", [], CmCIC::DOMAIN_NAME);
         }
         return Response::create(
             $data,
@@ -65,7 +67,7 @@ class CmcicSaveConfig extends BaseAdminController
         );
     }
 
-    public function save()
+    public function save(Request $request)
     {
         if (null !== $response = $this->checkAuth(AdminResources::MODULE, 'CmCIC', AccessManager::UPDATE)) {
             return $response;
@@ -73,7 +75,7 @@ class CmcicSaveConfig extends BaseAdminController
 
         $error_message="";
         $conf = new Config();
-        $form = new ConfigureCmCIC($this->getRequest());
+        $form = $this->createForm(ConfigureCmCIC::getName());
 
         try {
             $vform = $this->validateForm($form);

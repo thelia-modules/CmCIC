@@ -25,6 +25,8 @@ namespace CmCIC;
 
 use CmCIC\Model\Config;
 use Propel\Runtime\Connection\ConnectionInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\Router;
 use Thelia\Core\HttpFoundation\Response;
@@ -93,14 +95,14 @@ class CmCIC extends AbstractPaymentModule
      * @throws \Propel\Runtime\Exception\PropelException
      * @throws \Exception
      */
-    public function postActivation(ConnectionInterface $con = null)
+    public function postActivation(ConnectionInterface $con = null): void
     {
         /* insert the images from image folder if first module activation */
         $configFile = __DIR__ . self::JSON_CONFIG_PATH;
         $configDistFile = __DIR__ . self::JSON_CONFIG_PATH . '.dist';
 
-        if (! file_exists($configFile)) {
-            if (! copy($configDistFile, $configFile)) {
+        if (!file_exists($configFile)) {
+            if (!copy($configDistFile, $configFile)) {
                 throw new \Exception(
                     Translator::getInstance()->trans(
                         "Can't create file %file%. Please change the rights on the file and/or directory."
@@ -126,16 +128,16 @@ class CmCIC extends AbstractPaymentModule
 
     }
 
-    public function update($currentVersion , $newVersion , ConnectionInterface $con = null)
+    public function update($currentVersion, $newVersion, ConnectionInterface $con = null): void
     {
         // Delete obsolete admin includes
         $fs = new Filesystem();
 
         try {
-            $fs -> remove(__DIR__ . '/AdminIncludes');
-            $fs -> remove(__DIR__ . 'I18n/AdminIncludes');
+            $fs->remove(__DIR__ . '/AdminIncludes');
+            $fs->remove(__DIR__ . 'I18n/AdminIncludes');
         } catch (\Exception $ex) {
-            Tlog::getInstance()->addWarning("Failed to delete CmCIC module AdminIncludes directory (".__DIR__ . '/AdminIncludes): ' . $ex->getMessage());
+            Tlog::getInstance()->addWarning("Failed to delete CmCIC module AdminIncludes directory (" . __DIR__ . '/AdminIncludes): ' . $ex->getMessage());
         }
     }
 
@@ -146,10 +148,8 @@ class CmCIC extends AbstractPaymentModule
      */
     public function pay(Order $order)
     {
-		$c = Config::read(CmCIC::JSON_CONFIG_PATH);
+        $c = Config::read(CmCIC::JSON_CONFIG_PATH);
         $currency = $order->getCurrency()->getCode();
-        $cmCicRouter = $this->container->get('router.cmcic');
-        $mainRouter = $this->container->get('router.front');
 
         $vars = array(
             "version" => $c["CMCIC_VERSION"],
@@ -157,8 +157,8 @@ class CmCIC extends AbstractPaymentModule
             "date" => date("d/m/Y:H:i:s"),
             "montant" => (string)round($order->getTotalAmount(), 2) . $currency,
             "reference" => $this->harmonise($order->getId(), 'numeric', 12),
-            "url_retour_ok" => URL::getInstance()->absoluteUrl($mainRouter->generate("order.placed", array("order_id" => (string)$order->getId()), Router::ABSOLUTE_URL)),
-            "url_retour_err" => URL::getInstance()->absoluteUrl($cmCicRouter->generate("cmcic.payfail", array("order_id" => (string)$order->getId()), Router::ABSOLUTE_URL)),
+            "url_retour_ok" => URL::getInstance()->absoluteUrl("/order/placed/".$order->getId()),
+            "url_retour_err" => URL::getInstance()->absoluteUrl("/cmcic/payfail/" . $order->getId()),
             "lgue" => strtoupper($this->getRequest()->getSession()->getLang()->getCode()),
             "contexte_commande" => self::getCommandContext($order),
             "societe" => $c["CMCIC_CODESOCIETE"],
@@ -168,7 +168,7 @@ class CmCIC extends AbstractPaymentModule
             "ThreeDSecureChallenge" => "challenge_preferred",
         );
 
-		$hashable = self::getHashable($vars);
+        $hashable = self::getHashable($vars);
 
         $mac = self::computeHmac(
             $hashable,
@@ -239,33 +239,35 @@ class CmCIC extends AbstractPaymentModule
      * @return string
      * @throws \Propel\Runtime\Exception\PropelException
      */
-	public static function getCommandContext(Order $order) {
+    public static function getCommandContext(Order $order)
+    {
 
-		$orderAddressId = $order->getInvoiceOrderAddressId();
+        $orderAddressId = $order->getInvoiceOrderAddressId();
         $orderAddress = OrderAddressQuery::create()->findPk($orderAddressId);
-		$billing = self::orderAddressForCbPayment($orderAddress);
+        $billing = self::orderAddressForCbPayment($orderAddress);
 
 
-		$deliveryAddressId = $order->getDeliveryOrderAddressId();
+        $deliveryAddressId = $order->getDeliveryOrderAddressId();
         $deliveryAddress = OrderAddressQuery::create()->findPk($deliveryAddressId);
-		$shipping = self::orderAddressForCbPayment($deliveryAddress);
+        $shipping = self::orderAddressForCbPayment($deliveryAddress);
 
-		$commandContext = array("billing" => $billing,
-								"shipping" => $shipping);
+        $commandContext = array("billing" => $billing,
+            "shipping" => $shipping);
 
-		$json = json_encode($commandContext);
-		$utf8 = utf8_encode( $json );
-		return base64_encode( $utf8 );
-	}
+        $json = json_encode($commandContext);
+        $utf8 = utf8_encode($json);
+        return base64_encode($utf8);
+    }
 
     /**
      * @param OrderAddress $orderAddress
      * @return array
      * @throws \Propel\Runtime\Exception\PropelException
      */
-	public static function orderAddressForCbPayment(OrderAddress $orderAddress) {
+    public static function orderAddressForCbPayment(OrderAddress $orderAddress)
+    {
         $address = array(
-            "name" => substr($orderAddress->getFirstname()." ".$orderAddress->getLastname()." ".$orderAddress->getCompany(), 0, 45),
+            "name" => substr($orderAddress->getFirstname() . " " . $orderAddress->getLastname() . " " . $orderAddress->getCompany(), 0, 45),
             "firstName" => substr($orderAddress->getFirstname(), 0, 45),
             "lastName" => substr($orderAddress->getLastname(), 0, 45),
             "addressLine1" => substr($orderAddress->getAddress1(), 0, 50),
@@ -274,11 +276,11 @@ class CmCIC extends AbstractPaymentModule
             "country" => $orderAddress->getCountry()->getIsoalpha2()
         );
 
-        if (! empty($orderAddress->getAddress2())) {
+        if (!empty($orderAddress->getAddress2())) {
             $address["addressLine2"] = substr($orderAddress->getAddress2(), 0, 50);
         }
 
-        if (! empty($orderAddress->getAddress3())) {
+        if (!empty($orderAddress->getAddress3())) {
             $address["addressLine3"] = substr($orderAddress->getAddress3(), 0, 50);
         }
 
@@ -302,19 +304,33 @@ class CmCIC extends AbstractPaymentModule
         return $address;
     }
 
-	/**
+    /**
      * Get the new format for seal content, for DSP-2 (cf https://www.monetico-paiement.fr/fr/info/documentations/Monetico_Paiement_documentation_migration_3DSv2_1.0.pdf#%5B%7B%22num%22%3A83%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2C68%2C716%2C0%5D )
      * @param $vars
      * @return string
      */
-	public static function getHashable($vars) {
-		// Sort by keys according to ASCII order
-		ksort($vars);
+    public static function getHashable($vars)
+    {
+        // Sort by keys according to ASCII order
+        ksort($vars);
 
-		// Formats the values in the following way : Nom_champ=Valeur_champ
-		array_walk($vars, function (&$value, $key) {$value = "$key=$value";});
+        // Formats the values in the following way : Nom_champ=Valeur_champ
+        array_walk($vars, function (&$value, $key) {
+            $value = "$key=$value";
+        });
 
-		// Make it as a single string with * as separation character
-		return implode("*", $vars);
-	}
+        // Make it as a single string with * as separation character
+        return implode("*", $vars);
+    }
+
+    /**
+     * Defines how services are loaded in your modules.
+     */
+    public static function configureServices(ServicesConfigurator $servicesConfigurator): void
+    {
+        $servicesConfigurator->load(self::getModuleCode() . '\\', __DIR__)
+            ->exclude([THELIA_MODULE_DIR . ucfirst(self::getModuleCode()) . '/I18n/*'])
+            ->autowire(true)
+            ->autoconfigure(true);
+    }
 }
