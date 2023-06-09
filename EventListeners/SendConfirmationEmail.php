@@ -13,7 +13,7 @@
 namespace CmCIC\EventListeners;
 
 use CmCIC\CmCIC;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Thelia\Core\Event\Order\OrderEvent;
 use Thelia\Core\Event\TheliaEvents;
@@ -21,6 +21,13 @@ use Thelia\Log\Tlog;
 
 class SendConfirmationEmail implements EventSubscriberInterface
 {
+    protected EventDispatcherInterface $dispatcher;
+
+    public function __construct(EventDispatcherInterface $dispatcher)
+    {
+        $this->dispatcher = $dispatcher;
+    }
+
     /**
      * @param OrderEvent $event
      *
@@ -39,16 +46,15 @@ class SendConfirmationEmail implements EventSubscriberInterface
 
     /**
      * @param OrderEvent $event
-     * @param EventDispatcher $dispatcher
      * @throws \Propel\Runtime\Exception\PropelException
      */
-    public function updateStatus(OrderEvent $event, EventDispatcher $dispatcher)
+    public function updateStatus(OrderEvent $event)
     {
         $order = $event->getOrder();
         if ($order->isPaid() && $order->getPaymentModuleId() == CmCIC::getModuleId()) {
             // Send confirmation email if required.
             if (CmCIC::getConfigValue('send_confirmation_message_only_if_paid')) {
-                $dispatcher->dispatch($event, TheliaEvents::ORDER_SEND_CONFIRMATION_EMAIL);
+                $this->dispatcher->dispatch($event, TheliaEvents::ORDER_SEND_CONFIRMATION_EMAIL);
             }
 
             Tlog::getInstance()->debug("Confirmation email sent to customer " . $order->getCustomer()->getEmail());
