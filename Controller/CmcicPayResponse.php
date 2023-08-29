@@ -140,7 +140,7 @@ class CmcicPayResponse extends BaseFrontController
          */
         $log->setDestinations("\\Thelia\\Log\\Destination\\TlogDestinationRotatingFile");
 
-        return Response::create(
+        return new Response(
             sprintf(CmCIC::CMCIC_CGI2_RECEIPT, $response),
             200,
             array(
