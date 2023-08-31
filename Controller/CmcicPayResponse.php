@@ -24,7 +24,6 @@
 namespace CmCIC\Controller;
 
 use CmCIC\CmCIC;
-use CmCIC\Model\Config;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thelia\Controller\Front\BaseFrontController;
 use Thelia\Core\Event\Order\OrderEvent;
@@ -81,8 +80,7 @@ class CmcicPayResponse extends BaseFrontController
         /*
          * Retrieve HMac for CGI2
          */
-        $config = Config::read(CmCIC::JSON_CONFIG_PATH);
-		
+
 		$vars = $request->request->all();
 		
 		unset($vars['MAC']);
@@ -91,7 +89,7 @@ class CmcicPayResponse extends BaseFrontController
 		
         $computed_mac = CmCIC::computeHmac(
             $hashable,
-            CmCIC::getUsableKey($config["CMCIC_KEY"])
+            CmCIC::getUsableKey(CmCIC::getConfigValue("CMCIC_KEY"))
         );
         $response=CmCIC::CMCIC_CGI2_MACNOTOK.$hashable;
 		

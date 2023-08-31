@@ -23,7 +23,6 @@
 
 namespace CmCIC;
 
-use CmCIC\Model\Config;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
@@ -32,6 +31,7 @@ use Symfony\Component\Routing\Router;
 use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
+use Thelia\Model\ModuleConfigQuery;
 use Thelia\Model\ModuleImageQuery;
 use Thelia\Model\Order;
 use Thelia\Model\OrderAddress;
@@ -43,11 +43,22 @@ class CmCIC extends AbstractPaymentModule
 {
     const DOMAIN_NAME = "cmcic";
 
-    const JSON_CONFIG_PATH = "/Config/config.json";
-
     const CMCIC_CGI2_RECEIPT = "version=2\ncdr=%s";
     const CMCIC_CGI2_MACOK = "0";
     const CMCIC_CGI2_MACNOTOK = "1\n";
+
+    const CMCIC_DEFAULT_CONF_VALUES =
+        [
+            'CMCIC_KEY' => '12345678901234567890123456789012345678P0',
+            'CMCIC_TPE' => '0000001',
+            'CMCIC_VERSION' => '3.0',
+            'CMCIC_CODESOCIETE' => '4b18fba7070c8ae6bea8',
+            'CMCIC_SERVER' => 'https://p.monetico-services.com/',
+            'CMCIC_PAGE' => 'paiement.cgi',
+            'CMCIC_DEBUG' => false,
+            'CMCIC_ALLOWED_IPS' => null,
+            'CMCIC_send_confirmation_message_only_if_paid' => false,
+        ];
 
     protected $config;
 
@@ -62,11 +73,11 @@ class CmCIC extends AbstractPaymentModule
      */
     public function isValidPayment()
     {
-        $debug = $this->getConfigValue('debug', false);
+        $debug = $this->getConfigValue('CMCIC_DEBUG', false);
 
         if ($debug) {
             // Check allowed IPs when in test mode.
-            $testAllowedIps = $this->getConfigValue('allowed_ips', '');
+            $testAllowedIps = $this->getConfigValue('CMCIC_ALLOWED_IPS', '');
 
             $raw_ips = explode("\n", $testAllowedIps);
 
@@ -98,17 +109,9 @@ class CmCIC extends AbstractPaymentModule
     public function postActivation(ConnectionInterface $con = null): void
     {
         /* insert the images from image folder if first module activation */
-        $configFile = __DIR__ . self::JSON_CONFIG_PATH;
-        $configDistFile = __DIR__ . self::JSON_CONFIG_PATH . '.dist';
 
-        if (!file_exists($configFile)) {
-            if (!copy($configDistFile, $configFile)) {
-                throw new \Exception(
-                    Translator::getInstance()->trans(
-                        "Can't create file %file%. Please change the rights on the file and/or directory."
-                    )
-                );
-            }
+        foreach ($this::CMCIC_DEFAULT_CONF_VALUES as $nameConf => $valueConf){
+            CmCIC::setConfigValue($nameConf, $valueConf);
         }
 
         $module = $this->getModuleModel();
@@ -148,7 +151,11 @@ class CmCIC extends AbstractPaymentModule
      */
     public function pay(Order $order)
     {
-        $c = Config::read(CmCIC::JSON_CONFIG_PATH);
+
+        $c = [];
+        foreach (ModuleConfigQuery::create()->filterByModuleId(CmCIC::getModuleId())->find()->getData() as $moduleConf) {
+            $c[$moduleConf->getName()] = $moduleConf->getValue();
+        }
         $currency = $order->getCurrency()->getCode();
 
         $vars = array(

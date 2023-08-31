@@ -25,7 +25,8 @@ namespace CmCIC\Controller;
 
 use CmCIC\CmCIC;
 use CmCIC\Form\ConfigureCmCIC;
-use CmCIC\Model\Config;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\HttpFoundation\Response;
@@ -57,14 +58,14 @@ class CmcicSaveConfig extends BaseAdminController
         if (empty($data)) {
             $data = Translator::getInstance()->trans("The CmCIC server log is currently empty.", [], CmCIC::DOMAIN_NAME);
         }
-        return Response::create(
-            $data,
-            200,
-            array(
-                'Content-type' => "text/plain",
-                'Content-Disposition' => sprintf('Attachment;filename=log-cmcic.txt')
-            )
-        );
+
+        $header = [
+            'Content-Type' => "text/plain",
+            'Content-Disposition' => sprintf(
+                sprintf('Attachment;filename=log-cmcic.txt')
+            ),
+        ];
+        return new Response($data, 200, $header);
     }
 
     public function save(Request $request)
@@ -74,23 +75,18 @@ class CmcicSaveConfig extends BaseAdminController
         }
 
         $error_message="";
-        $conf = new Config();
         $form = $this->createForm(ConfigureCmCIC::getName());
 
         try {
             $vform = $this->validateForm($form);
 
-            CmCIC::setConfigValue('debug', $vform->get('debug')->getData());
-            CmCIC::setConfigValue('allowed_ips', $vform->get('allowed_ips')->getData());
-            CmCIC::setConfigValue('send_confirmation_message_only_if_paid', $vform->get('send_confirmation_message_only_if_paid')->getData());
-
-            // After post checks (PREG_MATCH) & create json file
-            if (preg_match("#^\d{7}$#", $vform->get('TPE')->getData()) &&
-                preg_match("#^[a-z\d]{40}$#i", $vform->get('com_key')->getData()) &&
-                preg_match("#^[a-z\-\d]+$#i", $vform->get('com_soc')->getData()) &&
-                preg_match("#^cic|cm|obc|mon$#", $vform->get('server')->getData())
+            // After post checks (PREG_MATCH)
+            if (preg_match("#^\d{7}$#", $vform->get('CMCIC_TPE')->getData()) &&
+                preg_match("#^[a-z\d]{40}$#i", $vform->get('CMCIC_KEY')->getData()) &&
+                preg_match("#^[a-z\-\d]+$#i", $vform->get('CMCIC_CODESOCIETE')->getData()) &&
+                preg_match("#^cic|cm|obc|mon$#", $vform->get('CMCIC_SERVER')->getData())
             ) {
-                $serv = $vform->get('server')->getData();
+                $serv = $vform->get('CMCIC_SERVER')->getData();
 
                 switch($serv) {
                     case 'mon':
@@ -113,19 +109,20 @@ class CmcicSaveConfig extends BaseAdminController
                         throw new \InvalidArgumentException("Unknown server type '$serv'");
                 }
 
-                if ($vform->get('debug')->getData() === true) {
+                if ($vform->get('CMCIC_DEBUG')->getData() === true) {
                     $serv .= 'test/';
                 }
 
-                $conf
-                    ->setCMCICKEY($vform->get('com_key')->getData())
-                    ->setCMCICVERSION(self::CMCIC_VERSION)
-                    ->setCMCICCODESOCIETE($vform->get('com_soc')->getData())
-                    ->setCMCICPAGE($vform->get('page')->getData())
-                    ->setCMCICTPE($vform->get('TPE')->getData())
-                    ->setCMCICSERVER($serv)
-                    ->write(CmCIC::JSON_CONFIG_PATH)
-                ;
+                $data = $vform->getData();
+
+                $data['CMCIC_SERVER'] = $serv;
+
+                foreach ($data as $name => $value) {
+                    if (!preg_match('/^CMCIC/', $name)) {
+                        continue;
+                    }
+                    CmCIC::setConfigValue($name, $value);
+                }
             } else {
                 throw new \Exception($this->getTranslator()->trans("Error in form syntax, please check that your values are correct."));
             }
