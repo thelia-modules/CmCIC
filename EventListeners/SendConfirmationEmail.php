@@ -84,7 +84,7 @@ class SendConfirmationEmail extends BaseAction implements EventSubscriberInterfa
     public static function getSubscribedEvents(): array
     {
         return array(
-            TheliaEvents::ORDER_UPDATE_STATUS => array("updateStatus", 128),
+            TheliaEvents::ORDER_UPDATE_STATUS => array("updateStatus", 10),
             TheliaEvents::ORDER_SEND_CONFIRMATION_EMAIL => array("sendConfirmationEmail", 129),
             TheliaEvents::ORDER_SEND_NOTIFICATION_EMAIL => array("sendNotificationEmail", 129)
         );
