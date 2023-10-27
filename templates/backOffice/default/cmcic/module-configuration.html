@@ -38,9 +38,9 @@
 
                                 <div class="row">
                                     <div class="col-md-6">
-                                        {render_form_field field="TPE"}
-                                        {render_form_field field="com_key"}
-                                        {render_form_field field="com_soc"}
+                                        {render_form_field field="CMCIC_TPE"}
+                                        {render_form_field field="CMCIC_KEY"}
+                                        {render_form_field field="CMCIC_CODESOCIETE"}
                                         <div class="well well-sm">
                                             <p>{intl d='cmcic.bo.default' l="<strong>URL de retour</strong>: %url" url={url path="/cmcic/validation"}}</strong></p>
                                             <p>{intl d='cmcic.bo.default' l="This is the value you should provide for the \"URL de Retour\" parameter in your bank back-office."}</p>
@@ -49,11 +49,11 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        {render_form_field field="server"}
-                                        {render_form_field field="page"}
-                                        {render_form_field field="send_confirmation_message_only_if_paid"}
-                                        {render_form_field field="debug"}
-                                        {render_form_field field="allowed_ips"}
+                                        {render_form_field field="CMCIC_SERVER"}
+                                        {render_form_field field="CMCIC_PAGE"}
+                                        {render_form_field field="CMCIC_send_confirmation_message_only_if_paid"}
+                                        {render_form_field field="CMCIC_DEBUG"}
+                                        {render_form_field field="CMCIC_ALLOWED_IPS"}
 
                                         <div class="form-group ">
                                             <label class="control-label">
