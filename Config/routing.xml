@@ -3,25 +3,4 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="cmcic.payfail" path="/cmcic/payfail/{order_id}" methods="get">
-        <default key="_controller">CmCIC\Controller\CmcicPayResponse::payfail</default>
-        <requirement key="order_id">\d+</requirement>
-    </route>
-
-    <route id="cmcic.payfail.with.message" path="/cmcic/payfail/{order_id}/{message}" methods="get">
-        <default key="_controller">CmCIC\Controller\CmcicPayResponse::payfail</default>
-        <requirement key="order_id">\d+</requirement>
-    </route>
-
-    <route id="cmcic.receive" path="/cmcic/validation" methods="post">
-        <default key="_controller">CmCIC\Controller\CmcicPayResponse::receiveResponse</default>
-    </route>
-
-    <route id="cmcic.saveconfig" path="/admin/module/cmcic/saveconfig" methods="post">
-        <default key="_controller">CmCIC\Controller\CmcicSaveConfig::save</default>
-    </route>
-
-    <route id="cmcic.download.log" path="/admin/module/cmcic/log">
-        <default key="_controller">CmCIC\Controller\CmcicSaveConfig::downloadLog</default>
-    </route>
 </routes>

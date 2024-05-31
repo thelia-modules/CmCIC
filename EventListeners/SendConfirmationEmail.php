@@ -41,7 +41,7 @@ class SendConfirmationEmail extends BaseAction implements EventSubscriberInterfa
         if (CmCIC::getConfigValue('send_confirmation_message_only_if_paid')) {
             // We send the order confirmation email only if the order is paid
             $order = $event->getOrder();
-            if (!$order->isPaid() && $order->getPaymentModuleId() == CmCIC::getModuleId()) {
+            if (!$order->isPaid() && $order->getPaymentModuleId() === (int)CmCIC::getModuleId()) {
                 $event->stopPropagation();
             }
         }
@@ -57,7 +57,7 @@ class SendConfirmationEmail extends BaseAction implements EventSubscriberInterfa
         if (CmCIC::getConfigValue('send_confirmation_message_only_if_paid')) {
             // We send the order notification email only if the order is paid
             $order = $event->getOrder();
-            if (!$order->isPaid() && $order->getPaymentModuleId() == CmCIC::getModuleId()) {
+            if (!$order->isPaid() && $order->getPaymentModuleId() === (int)CmCIC::getModuleId()) {
                 $event->stopPropagation();
             }
         }
@@ -70,7 +70,7 @@ class SendConfirmationEmail extends BaseAction implements EventSubscriberInterfa
     public function updateStatus(OrderEvent $event): void
     {
         $order = $event->getOrder();
-        if ($order->isPaid() && $order->getPaymentModuleId() == CmCIC::getModuleId()) {
+        if ($order->isPaid() && $order->getPaymentModuleId() === (int)CmCIC::getModuleId()) {
             // Send confirmation email if required.
             if (CmCIC::getConfigValue('send_confirmation_message_only_if_paid')) {
                 $this->dispatcher->dispatch($event, TheliaEvents::ORDER_SEND_CONFIRMATION_EMAIL);
