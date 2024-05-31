@@ -24,6 +24,7 @@
 namespace CmCIC\Form;
 
 use CmCIC\CmCIC;
+use JsonException;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -34,12 +35,15 @@ use Thelia\Form\BaseForm;
 
 class ConfigureCmCIC extends BaseForm
 {
-    protected function buildForm()
+    /**
+     * @throws JsonException
+     */
+    protected function buildForm(): void
     {
         $values = null;
         $path = __DIR__ . "/../" . CmCIC::JSON_CONFIG_PATH;
         if (is_readable($path)) {
-            $values = json_decode(file_get_contents($path), true);
+            $values = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
         }
         $this->formBuilder
             ->add('com_key', TextType::class, [
@@ -83,15 +87,20 @@ class ConfigureCmCIC extends BaseForm
                 'required' => 'true',
                 'expanded' => true,
                 'multiple' => false,
-                'data' => (null === $values ?
+                'data' => (
+                    null === $values ?
                     '' :
-                    (preg_match("#cic-banques#i", $values["CMCIC_SERVER"]) ?
+                    (
+                        preg_match("#cic-banques#i", $values["CMCIC_SERVER"]) ?
                         "cic" :
-                        (preg_match("#creditmutuel#i", $values["CMCIC_SERVER"]) ?
+                        (
+                            preg_match("#creditmutuel#i", $values["CMCIC_SERVER"]) ?
                             "cm" :
-                            (preg_match("#banque-obc#i", $values["CMCIC_SERVER"]) ?
+                            (
+                                preg_match("#banque-obc#i", $values["CMCIC_SERVER"]) ?
                                 "obc" :
-                                (preg_match("#monetico#i", $values["CMCIC_SERVER"]) ?
+                                (
+                                    preg_match("#monetico#i", $values["CMCIC_SERVER"]) ?
                                     "mon" :
                                     ""
                                 )
@@ -133,7 +142,7 @@ class ConfigureCmCIC extends BaseForm
                         CmCIC::DOMAIN_NAME
                     )
                 ],
-                'data' => boolval(CmCIC::getConfigValue('debug', false))
+                'data' => (bool)CmCIC::getConfigValue('debug', false)
             ])
             ->add(
                 'allowed_ips',
@@ -152,7 +161,8 @@ class ConfigureCmCIC extends BaseForm
                         'rows' => 3
                     ]
                 ]
-            )->add(
+            )
+            ->add(
                 'send_confirmation_message_only_if_paid',
                 CheckboxType::class,
                 [
@@ -168,6 +178,7 @@ class ConfigureCmCIC extends BaseForm
                         )
                     ]
                 ]
-            );
+            )
+        ;
     }
 }

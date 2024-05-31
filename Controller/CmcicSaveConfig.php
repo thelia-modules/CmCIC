@@ -26,26 +26,28 @@ namespace CmCIC\Controller;
 use CmCIC\CmCIC;
 use CmCIC\Form\ConfigureCmCIC;
 use CmCIC\Model\Config;
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
+use Symfony\Component\Routing\Attribute\Route;
 use Thelia\Controller\Admin\BaseAdminController;
-use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
 use Thelia\Tools\URL;
 
+#[Route('/admin/module/cmcic', name: 'cmcic_save_config_')]
 class CmcicSaveConfig extends BaseAdminController
 {
-    const CIC_SERVER = "https://ssl.paiement.cic-banques.fr/";
-    const CM_SERVER = "https://paiement.creditmutuel.fr/";
-    const OBC_SERVER = "https://ssl.paiement.banque-obc.fr/";
-    const MONETICO_SERVER = "https://p.monetico-services.com/";
+    public const CIC_SERVER = "https://ssl.paiement.cic-banques.fr/";
+    public const CM_SERVER = "https://paiement.creditmutuel.fr/";
+    public const OBC_SERVER = "https://ssl.paiement.banque-obc.fr/";
+    public const MONETICO_SERVER = "https://p.monetico-services.com/";
 
-    const CMCIC_VERSION = "3.0";
-    const CMCIC_URLOK = "/order/placed/";
-    const CMCIC_URLKO = "/module/cmcic/payfail/";
-    const CMCIC_URLRECEIVE = "/module/cmcic/receive/";
+    public const CMCIC_VERSION = "3.0";
 
+    #[Route('/log', name: 'download_log')]
     public function downloadLog()
     {
         if (null !== $response = $this->checkAuth(AdminResources::MODULE, 'CmCIC', AccessManager::UPDATE)) {
@@ -57,23 +59,23 @@ class CmcicSaveConfig extends BaseAdminController
         if (empty($data)) {
             $data = Translator::getInstance()->trans("The CmCIC server log is currently empty.", [], CmCIC::DOMAIN_NAME);
         }
-        return Response::create(
+        return new Response(
             $data,
             200,
             array(
                 'Content-type' => "text/plain",
-                'Content-Disposition' => sprintf('Attachment;filename=log-cmcic.txt')
+                'Content-Disposition' => 'Attachment;filename=log-cmcic.txt'
             )
         );
     }
 
-    public function save(Request $request)
+    #[Route('/saveconfig', name: 'save_config', methods: ['POST'])]
+    public function save()
     {
         if (null !== $response = $this->checkAuth(AdminResources::MODULE, 'CmCIC', AccessManager::UPDATE)) {
             return $response;
         }
 
-        $error_message="";
         $conf = new Config();
         $form = $this->createForm(ConfigureCmCIC::getName());
 
@@ -84,7 +86,7 @@ class CmcicSaveConfig extends BaseAdminController
             CmCIC::setConfigValue('allowed_ips', $vform->get('allowed_ips')->getData());
             CmCIC::setConfigValue('send_confirmation_message_only_if_paid', $vform->get('send_confirmation_message_only_if_paid')->getData());
 
-            // After post checks (PREG_MATCH) & create json file
+            // After post-checks (PREG_MATCH) & create json file
             if (preg_match("#^\d{7}$#", $vform->get('TPE')->getData()) &&
                 preg_match("#^[a-z\d]{40}$#i", $vform->get('com_key')->getData()) &&
                 preg_match("#^[a-z\-\d]+$#i", $vform->get('com_soc')->getData()) &&
@@ -92,26 +94,13 @@ class CmcicSaveConfig extends BaseAdminController
             ) {
                 $serv = $vform->get('server')->getData();
 
-                switch($serv) {
-                    case 'mon':
-                        $serv = self::MONETICO_SERVER;
-                        break;
-
-                    case 'cic':
-                        $serv = self::CIC_SERVER;
-                        break;
-
-                    case 'cm':
-                        $serv = self::CM_SERVER;
-                        break;
-
-                    case 'obc':
-                        $serv = self::OBC_SERVER;
-                        break;
-
-                    default:
-                        throw new \InvalidArgumentException("Unknown server type '$serv'");
-                }
+                $serv = match ($serv) {
+                    'mon' => self::MONETICO_SERVER,
+                    'cic' => self::CIC_SERVER,
+                    'cm' => self::CM_SERVER,
+                    'obc' => self::OBC_SERVER,
+                    default => throw new InvalidArgumentException("Unknown server type '$serv'"),
+                };
 
                 if ($vform->get('debug')->getData() === true) {
                     $serv .= 'test/';
@@ -127,9 +116,9 @@ class CmcicSaveConfig extends BaseAdminController
                     ->write(CmCIC::JSON_CONFIG_PATH)
                 ;
             } else {
-                throw new \Exception($this->getTranslator()->trans("Error in form syntax, please check that your values are correct."));
+                throw new RuntimeException(Translator::getInstance()->trans("Error in form syntax, please check that your values are correct."));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $error_message = $e->getMessage();
 
             $this->setupFormErrorContext(

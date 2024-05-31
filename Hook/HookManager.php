@@ -37,10 +37,22 @@ class HookManager extends BaseHook
      *
      * @param HookRenderEvent $event
      */
-    public function onModuleConfigure(HookRenderEvent $event)
+    public function onModuleConfigure(HookRenderEvent $event): void
     {
         $event->add(
             $this->render('cmcic/module-configuration.html')
         );
+    }
+
+    public static function getSubscribedHooks(): array
+    {
+        return [
+            "module.configuration" => [
+                [
+                    "type" => "back",
+                    "method" => "onModuleConfigure"
+                ]
+            ],
+        ];
     }
 }

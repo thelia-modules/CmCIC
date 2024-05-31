@@ -38,12 +38,12 @@ use Thelia\Core\Translation\Translator;
 
 class CheckRightsLoop extends BaseLoop implements ArraySearchLoopInterface
 {
-    protected function getArgDefinitions()
+    protected function getArgDefinitions(): ArgumentCollection
     {
         return new ArgumentCollection();
     }
 
-    public function buildArray()
+    public function buildArray(): array
     {
         $ret = array();
         $dir = __DIR__."/../Config/";
@@ -55,7 +55,7 @@ class CheckRightsLoop extends BaseLoop implements ArraySearchLoopInterface
         }
         if ($handle = opendir($dir)) {
             while (false !== ($file = readdir($handle))) {
-                if (strlen($file) > 5 && substr($file, -5) === ".json") {
+                if (strlen($file) > 5 && str_ends_with($file, ".json")) {
                     if (!is_readable($dir.$file)) {
                         $ret[] = array("ERRMES"=>Translator::getInstance()->trans("Can't read file"), "ERRFILE"=>"CmCIC/Config/".$file);
                     }
@@ -68,7 +68,7 @@ class CheckRightsLoop extends BaseLoop implements ArraySearchLoopInterface
 
         return $ret;
     }
-    public function parseResults(LoopResult $loopResult)
+    public function parseResults(LoopResult $loopResult): LoopResult
     {
         foreach ($loopResult->getResultDataCollection() as $arr) {
             $loopResultRow = new LoopResultRow();

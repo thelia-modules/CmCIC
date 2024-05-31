@@ -24,11 +24,13 @@
 namespace CmCIC;
 
 use CmCIC\Model\Config;
+use Exception;
+use JsonException;
 use Propel\Runtime\Connection\ConnectionInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Propel\Runtime\Exception\PropelException;
+use RuntimeException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Routing\Router;
 use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
@@ -41,32 +43,30 @@ use Thelia\Tools\URL;
 
 class CmCIC extends AbstractPaymentModule
 {
-    const DOMAIN_NAME = "cmcic";
+    public const DOMAIN_NAME = "cmcic";
 
-    const JSON_CONFIG_PATH = "/Config/config.json";
+    public const JSON_CONFIG_PATH = "/Config/config.json";
 
-    const CMCIC_CGI2_RECEIPT = "version=2\ncdr=%s";
-    const CMCIC_CGI2_MACOK = "0";
-    const CMCIC_CGI2_MACNOTOK = "1\n";
-
-    protected $config;
+    public const CMCIC_CGI2_RECEIPT = "version=2\ncdr=%s";
+    public const CMCIC_CGI2_MACOK = "0";
+    public const CMCIC_CGI2_MACNOTOK = "1\n";
 
     /**
      *
      * This method is call on Payment loop.
      *
      * If you return true, the payment method will de display
-     * If you return false, the payment method will not be display
+     * If you return false, the payment method will not be displayed
      *
      * @return boolean
      */
-    public function isValidPayment()
+    public function isValidPayment(): bool
     {
-        $debug = $this->getConfigValue('debug', false);
+        $debug = self::getConfigValue('debug', false);
 
         if ($debug) {
             // Check allowed IPs when in test mode.
-            $testAllowedIps = $this->getConfigValue('allowed_ips', '');
+            $testAllowedIps = self::getConfigValue('allowed_ips', '');
 
             $raw_ips = explode("\n", $testAllowedIps);
 
@@ -78,7 +78,7 @@ class CmCIC extends AbstractPaymentModule
 
             $client_ip = $this->getRequest()->getClientIp();
 
-            $valid = in_array($client_ip, $allowed_client_ips);
+            $valid = in_array($client_ip, $allowed_client_ips, true);
         } else {
             $valid = true;
         }
@@ -92,8 +92,8 @@ class CmCIC extends AbstractPaymentModule
 
     /**
      * @param ConnectionInterface|null $con
-     * @throws \Propel\Runtime\Exception\PropelException
-     * @throws \Exception
+     * @throws PropelException
+     * @throws Exception
      */
     public function postActivation(ConnectionInterface $con = null): void
     {
@@ -101,19 +101,17 @@ class CmCIC extends AbstractPaymentModule
         $configFile = __DIR__ . self::JSON_CONFIG_PATH;
         $configDistFile = __DIR__ . self::JSON_CONFIG_PATH . '.dist';
 
-        if (!file_exists($configFile)) {
-            if (!copy($configDistFile, $configFile)) {
-                throw new \Exception(
-                    Translator::getInstance()->trans(
-                        "Can't create file %file%. Please change the rights on the file and/or directory."
-                    )
-                );
-            }
+        if (!file_exists($configFile) && !copy($configDistFile, $configFile)) {
+            throw new RuntimeException(
+                Translator::getInstance()->trans(
+                    "Can't create file %file%. Please change the rights on the file and/or directory."
+                )
+            );
         }
 
         $module = $this->getModuleModel();
 
-        if (ModuleImageQuery::create()->filterByModule($module)->count() == 0) {
+        if (ModuleImageQuery::create()->filterByModule($module)->count() === 0) {
             $this->deployImageFolder($module, sprintf('%s/images', __DIR__), $con);
         }
 
@@ -136,7 +134,7 @@ class CmCIC extends AbstractPaymentModule
         try {
             $fs->remove(__DIR__ . '/AdminIncludes');
             $fs->remove(__DIR__ . 'I18n/AdminIncludes');
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             Tlog::getInstance()->addWarning("Failed to delete CmCIC module AdminIncludes directory (" . __DIR__ . '/AdminIncludes): ' . $ex->getMessage());
         }
     }
@@ -144,26 +142,26 @@ class CmCIC extends AbstractPaymentModule
     /**
      * @param Order $order
      * @return Response|null
-     * @throws \Exception
+     * @throws Exception
      */
-    public function pay(Order $order)
+    public function pay(Order $order): ?Response
     {
-        $c = Config::read(CmCIC::JSON_CONFIG_PATH);
+        $c = Config::read(self::JSON_CONFIG_PATH);
         $currency = $order->getCurrency()->getCode();
 
         $vars = array(
             "version" => $c["CMCIC_VERSION"],
             "TPE" => $c["CMCIC_TPE"],
             "date" => date("d/m/Y:H:i:s"),
-            "montant" => (string)round($order->getTotalAmount(), 2) . $currency,
+            "montant" => round($order->getTotalAmount(), 2) . $currency,
             "reference" => $this->harmonise($order->getId(), 'numeric', 12),
             "url_retour_ok" => URL::getInstance()->absoluteUrl("/order/placed/".$order->getId()),
             "url_retour_err" => URL::getInstance()->absoluteUrl("/cmcic/payfail/" . $order->getId()),
-            "lgue" => strtoupper($this->getRequest()->getSession()->getLang()->getCode()),
+            "lgue" => strtoupper($this->getRequest()->getSession()?->getLang()->getCode()),
             "contexte_commande" => self::getCommandContext($order),
             "societe" => $c["CMCIC_CODESOCIETE"],
             "texte-libre" => "0",
-            "mail" => $this->getRequest()->getSession()->getCustomerUser()->getEmail(),
+            "mail" => $this->getRequest()->getSession()?->getCustomerUser()?->getEmail(),
             "3dsdebrayable" => "0",
             "ThreeDSecureChallenge" => "challenge_preferred",
         );
@@ -183,7 +181,7 @@ class CmCIC extends AbstractPaymentModule
         );
     }
 
-    protected function harmonise($value, $type, $len)
+    protected function harmonise($value, $type, $len): string
     {
         switch ($type) {
             case 'numeric':
@@ -209,27 +207,25 @@ class CmCIC extends AbstractPaymentModule
         return $value;
     }
 
-    public static function getUsableKey($key)
+    public static function getUsableKey($key): string
     {
         $hexStrKey = substr($key, 0, 38);
-        $hexFinal = "" . substr($key, 38, 2) . "00";
+        $hexFinal = substr($key, 38, 2) . "00";
 
         $cca0 = ord($hexFinal);
 
         if ($cca0 > 70 && $cca0 < 97) {
-            $hexStrKey .= chr($cca0 - 23) . substr($hexFinal, 1, 1);
+            $hexStrKey .= chr($cca0 - 23) . $hexFinal[1];
+        } elseif ($hexFinal[1] === "M") {
+            $hexStrKey .= $hexFinal[0] . "0";
         } else {
-            if (substr($hexFinal, 1, 1) == "M") {
-                $hexStrKey .= substr($hexFinal, 0, 1) . "0";
-            } else {
-                $hexStrKey .= substr($hexFinal, 0, 2);
-            }
+            $hexStrKey .= substr($hexFinal, 0, 2);
         }
 
         return pack("H*", $hexStrKey);
     }
 
-    public static function computeHmac($sData, $key)
+    public static function computeHmac($sData, $key): string
     {
         return strtolower(hash_hmac("sha1", $sData, $key));
     }
@@ -237,9 +233,10 @@ class CmCIC extends AbstractPaymentModule
     /**
      * @param Order $order
      * @return string
-     * @throws \Propel\Runtime\Exception\PropelException
+     * @throws PropelException
+     * @throws JsonException
      */
-    public static function getCommandContext(Order $order)
+    public static function getCommandContext(Order $order): string
     {
 
         $orderAddressId = $order->getInvoiceOrderAddressId();
@@ -254,7 +251,7 @@ class CmCIC extends AbstractPaymentModule
         $commandContext = array("billing" => $billing,
             "shipping" => $shipping);
 
-        $json = json_encode($commandContext);
+        $json = json_encode($commandContext, JSON_THROW_ON_ERROR);
         $utf8 = utf8_encode($json);
         return base64_encode($utf8);
     }
@@ -262,9 +259,9 @@ class CmCIC extends AbstractPaymentModule
     /**
      * @param OrderAddress $orderAddress
      * @return array
-     * @throws \Propel\Runtime\Exception\PropelException
+     * @throws PropelException
      */
-    public static function orderAddressForCbPayment(OrderAddress $orderAddress)
+    public static function orderAddressForCbPayment(OrderAddress $orderAddress): array
     {
         $address = array(
             "name" => substr($orderAddress->getFirstname() . " " . $orderAddress->getLastname() . " " . $orderAddress->getCompany(), 0, 45),
@@ -289,8 +286,8 @@ class CmCIC extends AbstractPaymentModule
         }
 
         /*
-         We should not pass a phone number. This number is optionnal, but if it is provided, it should match the
-        documented regexp : (^[0-9]{2,20}$), which is not always the case, an may prevent payment !!
+         We should not pass a phone number. This number is essential, but if it is provided, it should match the
+        documented regexp : (^[0-9]{2,20}$), which is not always the case, a may prevent payment !!
 
         if (substr($orderAddress->getPhone(),0,1) == "+") {
             $address["phone"] = $orderAddress->getPhone();
@@ -309,13 +306,13 @@ class CmCIC extends AbstractPaymentModule
      * @param $vars
      * @return string
      */
-    public static function getHashable($vars)
+    public static function getHashable($vars): string
     {
         // Sort by keys according to ASCII order
         ksort($vars);
 
-        // Formats the values in the following way : Nom_champ=Valeur_champ
-        array_walk($vars, function (&$value, $key) {
+        // Formats the values in the following way: Nom_champ=Valeur_champ
+        array_walk($vars, static function (&$value, $key) {
             $value = "$key=$value";
         });
 
@@ -330,7 +327,7 @@ class CmCIC extends AbstractPaymentModule
     {
         $servicesConfigurator->load(self::getModuleCode() . '\\', __DIR__)
             ->exclude([THELIA_MODULE_DIR . ucfirst(self::getModuleCode()) . '/I18n/*'])
-            ->autowire(true)
-            ->autoconfigure(true);
+            ->autowire()
+            ->autoconfigure();
     }
 }
