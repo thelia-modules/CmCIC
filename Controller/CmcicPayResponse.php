@@ -96,7 +96,7 @@ class CmcicPayResponse extends BaseFrontController
         
         $vars = $requestStack->getCurrentRequest()?->request->all();
         
-        unset($vars['MAC']);
+        unset($vars['MAC'], $vars['isApiRoute']);
         
         $hashable = CmCIC::getHashable($vars);
         
