@@ -1,0 +1,97 @@
+{# CmCIC module configuration — default-twig BO hook fragment (module.configuration) #}
+{% if rights_errors is not empty %}
+    {% for err in rights_errors %}
+        <div class="alert alert-danger">
+            <p>{{ err.message }} {{ err.file }} | {{ 'Please change the access rights'|trans({}, 'cmcic.bo.default') }}.</p>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title h5 mb-0">{{ 'Configuration CmCIC'|trans({}, 'cmcic.bo.default') }}</h2>
+        </div>
+        <div class="card-body">
+            {{ form_start(form, {
+                action: path('cmcic_save_config_save_config'),
+                method: 'POST',
+                attr: {novalidate: 'novalidate'}
+            }) }}
+
+                {{ form_errors(form) }}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.TPE) }}
+                            {{ form_widget(form.TPE, {attr: {class: 'form-control' ~ (form.TPE.vars.errors|length ? ' is-invalid' : '')}}) }}
+                            {{ form_errors(form.TPE) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.com_key) }}
+                            {{ form_widget(form.com_key, {attr: {class: 'form-control' ~ (form.com_key.vars.errors|length ? ' is-invalid' : '')}}) }}
+                            {{ form_errors(form.com_key) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.com_soc) }}
+                            {{ form_widget(form.com_soc, {attr: {class: 'form-control' ~ (form.com_soc.vars.errors|length ? ' is-invalid' : '')}}) }}
+                            {{ form_errors(form.com_soc) }}
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <p class="mb-1">
+                                    <strong>{{ 'Callback URL'|trans({}, 'cmcic.bo.default') }}:</strong>
+                                    <code>{{ app.request.schemeAndHttpHost }}/cmcic/validation</code>
+                                </p>
+                                <p class="mb-0 form-text">{{ 'This is the value you should provide for the "URL de Retour" parameter in your bank back-office.'|trans({}, 'cmcic.bo.default') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.server) }}
+                            {{ form_widget(form.server) }}
+                            {{ form_errors(form.server) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.page) }}
+                            {{ form_widget(form.page, {attr: {class: 'form-control' ~ (form.page.vars.errors|length ? ' is-invalid' : '')}}) }}
+                            {{ form_errors(form.page) }}
+                        </div>
+                        <div class="mb-3 form-check">
+                            {{ form_widget(form.send_confirmation_message_only_if_paid, {attr: {class: 'form-check-input'}}) }}
+                            {{ form_label(form.send_confirmation_message_only_if_paid, null, {label_attr: {class: 'form-check-label'}}) }}
+                        </div>
+                        <div class="mb-3 form-check">
+                            {{ form_widget(form.debug, {attr: {class: 'form-check-input'}}) }}
+                            {{ form_label(form.debug, null, {label_attr: {class: 'form-check-label'}}) }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.allowed_ips) }}
+                            {{ form_widget(form.allowed_ips, {attr: {class: 'form-control'}}) }}
+                            {{ form_errors(form.allowed_ips) }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{{ 'Transaction log'|trans({}, 'cmcic.bo.default') }}</label>
+                            <p class="form-text">
+                                <a href="{{ path('cmcic_save_config_download_log') }}">{{ 'Click here'|trans({}, 'cmcic.bo.default') }}</a>
+                                {{ 'to download the communications log between the module and the bank server'|trans({}, 'cmcic.bo.default') }}.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> {{ 'Save'|trans({}, 'cmcic.bo.default') }}
+                    </button>
+                    <a href="{{ path('admin.module') }}" class="btn btn-secondary">
+                        {{ 'Cancel'|trans({}, 'cmcic.bo.default') }}
+                    </a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endif %}
