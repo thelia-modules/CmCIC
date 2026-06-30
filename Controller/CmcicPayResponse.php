@@ -73,7 +73,7 @@ class CmcicPayResponse extends BaseFrontController
     #[Route('/validation', name: 'validation', methods: ['POST'])]
     public function receiveResponse(EventDispatcherInterface $eventDispatcher, RequestStack $requestStack): Response
     {
-        $order_id = $requestStack->getCurrentRequest()?->get('reference');
+        $order_id = $requestStack->getCurrentRequest()?->request->get('reference');
 
         if (is_numeric($order_id)) {
             $order_id = (int)$order_id;
@@ -106,10 +106,10 @@ class CmcicPayResponse extends BaseFrontController
         );
         $response=CmCIC::CMCIC_CGI2_MACNOTOK.$hashable;
 
-        $request_mac = strtolower($requestStack->getCurrentRequest()?->get('MAC'));
+        $request_mac = strtolower($requestStack->getCurrentRequest()?->request->get('MAC'));
 
         if ($computed_mac === $request_mac) {
-            $code = $requestStack->getCurrentRequest()?->get("code-retour");
+            $code = $requestStack->getCurrentRequest()?->request->get("code-retour");
 
             $status = OrderStatusQuery::create()->findOneByCode(OrderStatus::CODE_PAID);
 
@@ -126,7 +126,7 @@ class CmcicPayResponse extends BaseFrontController
                     $eventDispatcher->dispatch($event, TheliaEvents::ORDER_UPDATE_STATUS);
                     break;
                 case "Annulation":
-                    $msg = "Error during the paiement: ".$requestStack->getCurrentRequest()?->get("motifrefus");
+                    $msg = "Error during the paiement: ".$requestStack->getCurrentRequest()?->request->get("motifrefus");
                     break;
                 default:
                     $log->error("Error while receiving response from CMCIC: code-retour not valid $code");
