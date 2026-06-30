@@ -2,7 +2,7 @@
     "name": "thelia/cmcic-module",
     "type": "thelia-module",
     "license": "LGPL-3.0",
-    "description": "Paypal module for Thelia ecommerce solution",
+    "description": "CmCIC/Monetico payment module for Thelia ecommerce solution",
     "authors": [
         {
             "name": "Thelia",
