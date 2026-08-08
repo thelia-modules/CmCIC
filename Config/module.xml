@@ -14,7 +14,7 @@
         <language>fr_FR</language>
         <language>en_US</language>
     </languages>
-    <version>2.0.4</version>
+    <version>3.0.0</version>
     <authors>
         <author>
             <name>Thelia</name>
@@ -28,6 +28,6 @@
         </author>
     </authors>
     <type>payment</type>
-    <thelia>2.5.0</thelia>
+    <thelia>3.0.0</thelia>
     <stability>prod</stability>
 </module>
