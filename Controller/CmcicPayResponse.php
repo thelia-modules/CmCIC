@@ -24,7 +24,6 @@
 namespace CmCIC\Controller;
 
 use CmCIC\CmCIC;
-use CmCIC\Model\Config;
 use Exception;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -92,8 +91,8 @@ class CmcicPayResponse extends BaseFrontController
         /*
          * Retrieve HMac for CGI2
          */
-        $config = Config::read(CmCIC::JSON_CONFIG_PATH);
-        
+        $merchantKey = CmCIC::requireConfigValue(CmCIC::CONFIG_KEY);
+
         $vars = $requestStack->getCurrentRequest()?->request->all();
         
         unset($vars['MAC']);
@@ -102,7 +101,7 @@ class CmcicPayResponse extends BaseFrontController
         
         $computed_mac = CmCIC::computeHmac(
             $hashable,
-            CmCIC::getUsableKey($config["CMCIC_KEY"])
+            CmCIC::getUsableKey($merchantKey)
         );
         $response=CmCIC::CMCIC_CGI2_MACNOTOK.$hashable;
 

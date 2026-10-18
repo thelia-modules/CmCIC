@@ -25,7 +25,6 @@ namespace CmCIC\Controller;
 
 use CmCIC\CmCIC;
 use CmCIC\Form\ConfigureCmCIC;
-use CmCIC\Model\Config;
 use Exception;
 use InvalidArgumentException;
 use RuntimeException;
@@ -76,7 +75,6 @@ class CmcicSaveConfig extends BaseAdminController
             return $response;
         }
 
-        $conf = new Config();
         $form = $this->createForm(ConfigureCmCIC::getName());
 
         try {
@@ -86,7 +84,7 @@ class CmcicSaveConfig extends BaseAdminController
             CmCIC::setConfigValue('allowed_ips', $vform->get('allowed_ips')->getData());
             CmCIC::setConfigValue('send_confirmation_message_only_if_paid', $vform->get('send_confirmation_message_only_if_paid')->getData());
 
-            // After post-checks (PREG_MATCH) & create json file
+            // After post-checks (PREG_MATCH), store the bank credentials
             if (preg_match("#^\d{7}$#", $vform->get('TPE')->getData()) &&
                 preg_match("#^[a-z\d]{40}$#i", $vform->get('com_key')->getData()) &&
                 preg_match("#^[a-z\-\d]+$#i", $vform->get('com_soc')->getData()) &&
@@ -106,15 +104,12 @@ class CmcicSaveConfig extends BaseAdminController
                     $serv .= 'test/';
                 }
 
-                $conf
-                    ->setCMCICKEY($vform->get('com_key')->getData())
-                    ->setCMCICVERSION(self::CMCIC_VERSION)
-                    ->setCMCICCODESOCIETE($vform->get('com_soc')->getData())
-                    ->setCMCICPAGE($vform->get('page')->getData())
-                    ->setCMCICTPE($vform->get('TPE')->getData())
-                    ->setCMCICSERVER($serv)
-                    ->write(CmCIC::JSON_CONFIG_PATH)
-                ;
+                CmCIC::setConfigValue(CmCIC::CONFIG_KEY, $vform->get('com_key')->getData());
+                CmCIC::setConfigValue(CmCIC::CONFIG_VERSION, self::CMCIC_VERSION);
+                CmCIC::setConfigValue(CmCIC::CONFIG_COMPANY_CODE, $vform->get('com_soc')->getData());
+                CmCIC::setConfigValue(CmCIC::CONFIG_PAGE, $vform->get('page')->getData());
+                CmCIC::setConfigValue(CmCIC::CONFIG_TPE, $vform->get('TPE')->getData());
+                CmCIC::setConfigValue(CmCIC::CONFIG_SERVER, $serv);
             } else {
                 throw new RuntimeException(Translator::getInstance()->trans("Error in form syntax, please check that your values are correct."));
             }

@@ -24,7 +24,6 @@
 namespace CmCIC\Form;
 
 use CmCIC\CmCIC;
-use JsonException;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -35,23 +34,17 @@ use Thelia\Form\BaseForm;
 
 class ConfigureCmCIC extends BaseForm
 {
-    /**
-     * @throws JsonException
-     */
     protected function buildForm(): void
     {
-        $values = null;
-        $path = __DIR__ . "/../" . CmCIC::JSON_CONFIG_PATH;
-        if (is_readable($path)) {
-            $values = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
-        }
+        $server = (string) CmCIC::getConfigValue(CmCIC::CONFIG_SERVER, '');
+
         $this->formBuilder
             ->add('com_key', TextType::class, [
                 'label' => Translator::getInstance()->trans('Merchant key', [], CmCIC::DOMAIN_NAME),
                 'label_attr' => [
                     'for' => 'com_key'
                 ],
-                'data' => (null === $values ? '' : $values["CMCIC_KEY"]),
+                'data' => CmCIC::getConfigValue(CmCIC::CONFIG_KEY, ''),
                 'constraints' => [
                     new NotBlank()
                 ]
@@ -61,7 +54,7 @@ class ConfigureCmCIC extends BaseForm
                 'label_attr' => [
                     'for' => 'TPE'
                 ],
-                'data' => (null === $values ? '' : $values["CMCIC_TPE"]),
+                'data' => CmCIC::getConfigValue(CmCIC::CONFIG_TPE, ''),
                 'constraints' => [
                     new NotBlank()
                 ]
@@ -71,7 +64,7 @@ class ConfigureCmCIC extends BaseForm
                 'label_attr' => [
                     'for' => 'com_soc'
                 ],
-                'data' => (null === $values ? '' : $values["CMCIC_CODESOCIETE"]),
+                'data' => CmCIC::getConfigValue(CmCIC::CONFIG_COMPANY_CODE, ''),
                 'constraints' => [
                     new NotBlank()
                 ]
@@ -87,27 +80,13 @@ class ConfigureCmCIC extends BaseForm
                 'required' => 'true',
                 'expanded' => true,
                 'multiple' => false,
-                'data' => (
-                    null === $values ?
-                    '' :
-                    (
-                        preg_match("#cic-banques#i", $values["CMCIC_SERVER"]) ?
-                        "cic" :
-                        (
-                            preg_match("#creditmutuel#i", $values["CMCIC_SERVER"]) ?
-                            "cm" :
-                            (
-                                preg_match("#banque-obc#i", $values["CMCIC_SERVER"]) ?
-                                "obc" :
-                                (
-                                    preg_match("#monetico#i", $values["CMCIC_SERVER"]) ?
-                                    "mon" :
-                                    ""
-                                )
-                            )
-                        )
-                    )
-                ),
+                'data' => match (true) {
+                    (bool) preg_match("#cic-banques#i", $server) => "cic",
+                    (bool) preg_match("#creditmutuel#i", $server) => "cm",
+                    (bool) preg_match("#banque-obc#i", $server) => "obc",
+                    (bool) preg_match("#monetico#i", $server) => "mon",
+                    default => "",
+                },
                 'label_attr' => [
                     'help' => Translator::getInstance()->trans(
                         "The module may be used with several banks. Please select your bank here.",
@@ -126,7 +105,7 @@ class ConfigureCmCIC extends BaseForm
                         CmCIC::DOMAIN_NAME
                     )
                 ],
-                'data' => (null === $values ? '' : $values["CMCIC_PAGE"]),
+                'data' => CmCIC::getConfigValue(CmCIC::CONFIG_PAGE, CmCIC::DEFAULT_PAGE),
                 'constraints' => [
                     new NotBlank()
                 ]
