@@ -23,7 +23,6 @@
 
 namespace CmCIC;
 
-use CmCIC\Model\Config;
 use Exception;
 use JsonException;
 use Propel\Runtime\Connection\ConnectionInterface;
@@ -45,7 +44,30 @@ class CmCIC extends AbstractPaymentModule
 {
     public const DOMAIN_NAME = "cmcic";
 
-    public const JSON_CONFIG_PATH = "/Config/config.json";
+    /**
+     * Keys of the bank credentials in the module configuration (module_config table).
+     */
+    public const CONFIG_TPE = 'CMCIC_TPE';
+    public const CONFIG_KEY = 'CMCIC_KEY';
+    public const CONFIG_COMPANY_CODE = 'CMCIC_CODESOCIETE';
+    public const CONFIG_SERVER = 'CMCIC_SERVER';
+    public const CONFIG_PAGE = 'CMCIC_PAGE';
+    public const CONFIG_VERSION = 'CMCIC_VERSION';
+
+    /**
+     * Where the bank credentials were stored before they moved to the module configuration.
+     * The file is only read, once, by the update; it is never written nor removed.
+     */
+    public const LEGACY_JSON_CONFIG_PATH = '/Config/config.json';
+
+    /**
+     * TPE of the sample that the removed Config/config.json.dist put in the file on activation:
+     * a file that still holds it was never configured.
+     */
+    private const LEGACY_SAMPLE_TPE = '0000001';
+
+    public const DEFAULT_PAGE = 'paiement.cgi';
+    public const DEFAULT_VERSION = '3.0';
 
     public const CMCIC_CGI2_RECEIPT = "version=2\ncdr=%s";
     public const CMCIC_CGI2_MACOK = "0";
@@ -95,21 +117,11 @@ class CmCIC extends AbstractPaymentModule
      * @throws PropelException
      * @throws Exception
      */
-    public function postActivation(ConnectionInterface $con = null): void
+    public function postActivation(?ConnectionInterface $con = null): void
     {
-        /* insert the images from image folder if first module activation */
-        $configFile = __DIR__ . self::JSON_CONFIG_PATH;
-        $configDistFile = __DIR__ . self::JSON_CONFIG_PATH . '.dist';
-
-        if (!file_exists($configFile) && !copy($configDistFile, $configFile)) {
-            throw new RuntimeException(
-                Translator::getInstance()->trans(
-                    "Can't create file %file%. Please change the rights on the file and/or directory."
-                )
-            );
-        }
-
         $module = $this->getModuleModel();
+
+        /* insert the images from image folder if first module activation */
 
         if (ModuleImageQuery::create()->filterByModule($module)->count() === 0) {
             $this->deployImageFolder($module, sprintf('%s/images', __DIR__), $con);
@@ -126,7 +138,7 @@ class CmCIC extends AbstractPaymentModule
 
     }
 
-    public function update($currentVersion, $newVersion, ConnectionInterface $con = null): void
+    public function update($currentVersion, $newVersion, ?ConnectionInterface $con = null): void
     {
         // Delete obsolete admin includes
         $fs = new Filesystem();
@@ -137,6 +149,57 @@ class CmCIC extends AbstractPaymentModule
         } catch (Exception $ex) {
             Tlog::getInstance()->addWarning("Failed to delete CmCIC module AdminIncludes directory (" . __DIR__ . '/AdminIncludes): ' . $ex->getMessage());
         }
+
+        self::importLegacyJsonConfiguration(__DIR__ . self::LEGACY_JSON_CONFIG_PATH);
+    }
+
+    /**
+     * Copies the bank credentials of a legacy Config/config.json into the module configuration.
+     *
+     * A credential already in the database is kept, so the import can run again without effect.
+     * The file is left in place, which keeps a rollback to the previous version possible.
+     *
+     * @return int the number of credentials copied
+     */
+    public static function importLegacyJsonConfiguration(string $path): int
+    {
+        if (!is_readable($path)) {
+            return 0;
+        }
+
+        try {
+            $legacy = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            Tlog::getInstance()->addWarning("CmCIC: $path is not valid JSON, its credentials are not imported: " . $exception->getMessage());
+
+            return 0;
+        }
+
+        if (!is_array($legacy) || ($legacy[self::CONFIG_TPE] ?? null) === self::LEGACY_SAMPLE_TPE) {
+            return 0;
+        }
+
+        $imported = 0;
+
+        foreach ([
+            self::CONFIG_TPE,
+            self::CONFIG_KEY,
+            self::CONFIG_COMPANY_CODE,
+            self::CONFIG_SERVER,
+            self::CONFIG_PAGE,
+            self::CONFIG_VERSION,
+        ] as $name) {
+            $value = $legacy[$name] ?? null;
+
+            if (!is_string($value) || $value === '' || self::getConfigValue($name) !== null) {
+                continue;
+            }
+
+            self::setConfigValue($name, $value);
+            ++$imported;
+        }
+
+        return $imported;
     }
 
     /**
@@ -146,12 +209,11 @@ class CmCIC extends AbstractPaymentModule
      */
     public function pay(Order $order): ?Response
     {
-        $c = Config::read(self::JSON_CONFIG_PATH);
         $currency = $order->getCurrency()->getCode();
 
         $vars = array(
-            "version" => $c["CMCIC_VERSION"],
-            "TPE" => $c["CMCIC_TPE"],
+            "version" => self::getConfigValue(self::CONFIG_VERSION, self::DEFAULT_VERSION),
+            "TPE" => self::requireConfigValue(self::CONFIG_TPE),
             "date" => date("d/m/Y:H:i:s"),
             "montant" => round($order->getTotalAmount(), 2) . $currency,
             "reference" => $this->harmonise($order->getId(), 'numeric', 12),
@@ -159,7 +221,7 @@ class CmCIC extends AbstractPaymentModule
             "url_retour_err" => URL::getInstance()->absoluteUrl("/cmcic/payfail/" . $order->getId()),
             "lgue" => strtoupper($this->getRequest()->getSession()?->getLang()->getCode()),
             "contexte_commande" => self::getCommandContext($order),
-            "societe" => $c["CMCIC_CODESOCIETE"],
+            "societe" => self::requireConfigValue(self::CONFIG_COMPANY_CODE),
             "texte-libre" => "0",
             "mail" => $this->getRequest()->getSession()?->getCustomerUser()?->getEmail(),
             "3dsdebrayable" => "0",
@@ -170,15 +232,37 @@ class CmCIC extends AbstractPaymentModule
 
         $mac = self::computeHmac(
             $hashable,
-            self::getUsableKey($c["CMCIC_KEY"])
+            self::getUsableKey(self::requireConfigValue(self::CONFIG_KEY))
         );
         $vars["MAC"] = $mac;
 
         return $this->generateGatewayFormResponse(
             $order,
-            $c["CMCIC_SERVER"] . $c["CMCIC_PAGE"],
+            self::requireConfigValue(self::CONFIG_SERVER) . self::getConfigValue(self::CONFIG_PAGE, self::DEFAULT_PAGE),
             $vars
         );
+    }
+
+    /**
+     * A bank credential that the payment cannot do without.
+     *
+     * @throws RuntimeException when the credential has not been entered in the module configuration
+     */
+    public static function requireConfigValue(string $name): string
+    {
+        $value = self::getConfigValue($name);
+
+        if ($value === null || $value === '') {
+            throw new RuntimeException(
+                Translator::getInstance()->trans(
+                    "The CmCIC module is not configured (missing %name%). Please fill in the module configuration page.",
+                    ['%name%' => $name],
+                    self::DOMAIN_NAME
+                )
+            );
+        }
+
+        return $value;
     }
 
     protected function harmonise($value, $type, $len): string

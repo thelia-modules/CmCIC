@@ -33,7 +33,6 @@ use Thelia\Core\Event\Hook\HookRenderEvent;
 use Thelia\Core\Form\TheliaFormFactory;
 use Thelia\Core\Hook\BaseHook;
 use Thelia\Core\Template\Parser\ParserResolver;
-use Thelia\Core\Translation\Translator;
 
 class HookManager extends BaseHook
 {
@@ -52,42 +51,8 @@ class HookManager extends BaseHook
         $event->add(
             $this->render('CmCIC/module-configuration.html.twig', [
                 'form' => $form->createView()->getView(),
-                'rights_errors' => $this->checkConfigRights(),
             ])
         );
-    }
-
-    /**
-     * @return array<int, array{message: string, file: string}>
-     */
-    private function checkConfigRights(): array
-    {
-        $translator = Translator::getInstance();
-        $errors = [];
-        $dir = __DIR__ . '/../Config/';
-
-        if (!is_readable($dir)) {
-            $errors[] = ['message' => $translator->trans("Can't read Config directory"), 'file' => ''];
-        }
-        if (!is_writable($dir)) {
-            $errors[] = ['message' => $translator->trans("Can't write Config directory"), 'file' => ''];
-        }
-
-        if ($handle = opendir($dir)) {
-            while (false !== ($file = readdir($handle))) {
-                if (strlen($file) > 5 && str_ends_with($file, '.json')) {
-                    if (!is_readable($dir . $file)) {
-                        $errors[] = ['message' => $translator->trans("Can't read file"), 'file' => 'CmCIC/Config/' . $file];
-                    }
-                    if (!is_writable($dir . $file)) {
-                        $errors[] = ['message' => $translator->trans("Can't write file"), 'file' => 'CmCIC/Config/' . $file];
-                    }
-                }
-            }
-            closedir($handle);
-        }
-
-        return $errors;
     }
 
     public static function getSubscribedHooks(): array

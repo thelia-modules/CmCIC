@@ -7,7 +7,6 @@ return array(
     'Cancel' => 'Cancel',
     'Click here' => 'Click here',
     'Configuration CmCIC' => 'CmCIC Configuration',
-    'Please change the access rights' => 'The module configuration cannot be saved. Please check access rights of module\'s "Config" directory.',
     'Save' => 'Save',
     'This is the value you should provide for the "URL de Retour" parameter in your bank back-office.' => 'This is the value you should provide for the "URL de Retour" parameter in your bank back-office.',
     'Transaction log' => 'Transaction log',

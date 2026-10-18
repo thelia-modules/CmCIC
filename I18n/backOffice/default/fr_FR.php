@@ -7,7 +7,6 @@ return array(
     'Cancel' => 'Annuler',
     'Click here' => 'Cliquez ici',
     'Configuration CmCIC' => 'Configuration CmCIC',
-    'Please change the access rights' => 'La configuration du module n\'a pas pu être enregistrée. Merci de vérifier les droits d\'accès au répertoire "Config" du module.',
     'Save' => 'Enregistrer',
     'This is the value you should provide for the "URL de Retour" parameter in your bank back-office.' => 'Il s\'agit de la valeur du paramètre "URL de Retour" que vous devez indiquer dans votre back-office bancaire.',
     'Transaction log' => 'Log des communications avec le serveur',
