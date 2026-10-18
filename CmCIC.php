@@ -54,6 +54,18 @@ class CmCIC extends AbstractPaymentModule
     public const CONFIG_PAGE = 'CMCIC_PAGE';
     public const CONFIG_VERSION = 'CMCIC_VERSION';
 
+    /**
+     * Where the bank credentials were stored before they moved to the module configuration.
+     * The file is only read, once, by the update; it is never written nor removed.
+     */
+    public const LEGACY_JSON_CONFIG_PATH = '/Config/config.json';
+
+    /**
+     * TPE of the sample that the removed Config/config.json.dist put in the file on activation:
+     * a file that still holds it was never configured.
+     */
+    private const LEGACY_SAMPLE_TPE = '0000001';
+
     public const DEFAULT_PAGE = 'paiement.cgi';
     public const DEFAULT_VERSION = '3.0';
 
@@ -137,6 +149,57 @@ class CmCIC extends AbstractPaymentModule
         } catch (Exception $ex) {
             Tlog::getInstance()->addWarning("Failed to delete CmCIC module AdminIncludes directory (" . __DIR__ . '/AdminIncludes): ' . $ex->getMessage());
         }
+
+        self::importLegacyJsonConfiguration(__DIR__ . self::LEGACY_JSON_CONFIG_PATH);
+    }
+
+    /**
+     * Copies the bank credentials of a legacy Config/config.json into the module configuration.
+     *
+     * A credential already in the database is kept, so the import can run again without effect.
+     * The file is left in place, which keeps a rollback to the previous version possible.
+     *
+     * @return int the number of credentials copied
+     */
+    public static function importLegacyJsonConfiguration(string $path): int
+    {
+        if (!is_readable($path)) {
+            return 0;
+        }
+
+        try {
+            $legacy = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            Tlog::getInstance()->addWarning("CmCIC: $path is not valid JSON, its credentials are not imported: " . $exception->getMessage());
+
+            return 0;
+        }
+
+        if (!is_array($legacy) || ($legacy[self::CONFIG_TPE] ?? null) === self::LEGACY_SAMPLE_TPE) {
+            return 0;
+        }
+
+        $imported = 0;
+
+        foreach ([
+            self::CONFIG_TPE,
+            self::CONFIG_KEY,
+            self::CONFIG_COMPANY_CODE,
+            self::CONFIG_SERVER,
+            self::CONFIG_PAGE,
+            self::CONFIG_VERSION,
+        ] as $name) {
+            $value = $legacy[$name] ?? null;
+
+            if (!is_string($value) || $value === '' || self::getConfigValue($name) !== null) {
+                continue;
+            }
+
+            self::setConfigValue($name, $value);
+            ++$imported;
+        }
+
+        return $imported;
     }
 
     /**
