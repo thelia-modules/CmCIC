@@ -117,7 +117,7 @@ class CmCIC extends AbstractPaymentModule
      * @throws PropelException
      * @throws Exception
      */
-    public function postActivation(ConnectionInterface $con = null): void
+    public function postActivation(?ConnectionInterface $con = null): void
     {
         $module = $this->getModuleModel();
 
@@ -138,7 +138,7 @@ class CmCIC extends AbstractPaymentModule
 
     }
 
-    public function update($currentVersion, $newVersion, ConnectionInterface $con = null): void
+    public function update($currentVersion, $newVersion, ?ConnectionInterface $con = null): void
     {
         // Delete obsolete admin includes
         $fs = new Filesystem();
