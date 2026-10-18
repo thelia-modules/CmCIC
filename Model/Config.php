@@ -14,21 +14,6 @@ class Config implements ConfigInterface
     protected $CMCIC_SERVER=null;
     protected $CMCIC_PAGE=null;
 
-    public function __construct()
-    {
-        $config=null;
-        try {
-            $config=$this->read();
-        } catch (\Exception $e) {}
-        if ($config !== null) {
-            foreach ($config as $key=>$val) {
-                try {
-                    $this->__set($key,$val);
-                } catch (\Exception $e) {}
-            }
-        }
-    }
-
     public function write($file=null)
     {
         $path = __DIR__."/../".$file;
